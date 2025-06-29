@@ -1,0 +1,111 @@
+[package]
+name = "sview"
+version = "1.0.0"
+edition = "2021"
+authors = ["XQR Team <team@xqr.ai>"]
+description = "🧠 SView - SVG Viewer & PWA Launcher with XQR Integration"
+license = "Apache"
+repository = "https://github.com/xqr/sview"
+keywords = ["svg", "pwa", "viewer", "xqr", "file-manager"]
+categories = ["command-line-utilities", "multimedia", "web-programming"]
+
+[dependencies]
+# CLI & Argument parsing
+clap = { version = "4.0", features = ["derive"] }
+
+# File system operations
+walkdir = "2.3"
+dirs = "5.0"
+
+# Parallel processing
+rayon = "1.7"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Base64 encoding
+base64 = "0.21"
+
+# URL encoding
+percent-encoding = "2.3"
+
+# Date/time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# HTTP client for fetching remote SVGs
+reqwest = { version = "0.11", features = ["json"] }
+
+# Async runtime
+tokio = { version = "1.0", features = ["full"] }
+
+# SVG parsing and manipulation
+roxmltree = "0.18"
+
+# Image processing for thumbnails
+image = "0.24"
+
+# Color processing
+palette = "0.7"
+
+# Encryption for XQR security
+aes-gcm = "0.10"
+argon2 = "0.5"
+
+# Configuration management
+config = "0.13"
+
+# Logging
+env_logger = "0.10"
+log = "0.4"
+
+# Terminal UI for advanced CLI
+crossterm = "0.27"
+ratatui = "0.24"
+
+# File watching
+notify = "6.0"
+
+# Process management
+sysinfo = "0.29"
+
+[dev-dependencies]
+tempfile = "3.8"
+assert_cmd = "2.0"
+predicates = "3.0"
+
+[features]
+default = ["gui", "encryption", "watch"]
+gui = []
+encryption = ["aes-gcm", "argon2"]
+watch = ["notify"]
+experimental = []
+
+[[bin]]
+name = "sview"
+path = "src/main.rs"
+
+[[bin]]
+name = "sview-gui"
+path = "src/gui.rs"
+required-features = ["gui"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+# Build configuration for different platforms
+[target.'cfg(target_os = "linux")']
+[target.'cfg(target_os = "windows")']
+[target.'cfg(target_os = "macos")']
+
+# Package metadata
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
