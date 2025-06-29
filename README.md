@@ -40,10 +40,10 @@ SView to zaawansowane narzędzie do zarządzania, przeglądania i uruchamiania p
 
 ```bash
 # Pobierz i uruchom skrypt instalacyjny
-curl -sSL https://raw.githubusercontent.com/xqr/sview/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/veridock/sview/main/install.sh | bash
 
 # Lub sklonuj repozytorium i uruchom lokalnie
-git clone https://github.com/xqr/sview.git
+git clone https://github.com/veridock/sview.git
 cd sview
 chmod +x install.sh
 ./install.sh
@@ -53,7 +53,7 @@ chmod +x install.sh
 
 ```bash
 # Wymagania: Rust 1.70+, Node.js 18+ (opcjonalnie)
-git clone https://github.com/xqr/sview.git
+git clone https://github.com/veridock/sview.git
 cd sview
 
 # Kompilacja
@@ -616,7 +616,7 @@ sview/
 
 ```bash
 # Sklonuj repozytorium
-git clone https://github.com/xqr/sview.git
+git clone https://github.com/veridock/sview.git
 cd sview
 
 # Zainstaluj zależności
@@ -729,7 +729,7 @@ Apache License - zobacz [LICENSE](LICENSE) dla szczegółów.
 
 - **Website**: https://sview.xqr.ai
 - **Documentation**: https://docs.sview.xqr.ai
-- **GitHub**: https://github.com/xqr/sview
+- **GitHub**: https://github.com/veridock/sview
 - **Discord**: https://discord.gg/xqr-sview
 - **Email**: team@xqr.ai
 

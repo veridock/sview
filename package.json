@@ -1,0 +1,226 @@
+{
+  "name": "sview",
+  "version": "1.0.0",
+  "description": "🧠 SVG Viewer & PWA Launcher with XQR Integration",
+  "main": "gui/main.js",
+  "author": "XQR Team <team@xqr.ai>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/veridock/sview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/veridock/sview/issues"
+  },
+  "homepage": "https://sview.xqr.ai",
+  "keywords": [
+    "svg",
+    "viewer",
+    "pwa",
+    "xqr",
+    "file-manager",
+    "rust",
+    "electron",
+    "memory-system"
+  ],
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "start": "electron gui/main.js",
+    "dev": "concurrently \"cargo run\" \"npm run dev:gui\"",
+    "dev:gui": "cd gui && npm run dev",
+    "build": "npm run build:rust && npm run build:gui",
+    "build:rust": "cargo build --release --all-features",
+    "build:gui": "cd gui && npm run build",
+    "build:all": "npm run build && npm run package:electron",
+    "test": "npm run test:rust && npm run test:gui",
+    "test:rust": "cargo test --all-features",
+    "test:gui": "cd gui && npm test",
+    "test:coverage": "cargo tarpaulin --all-features --out html",
+    "lint": "npm run lint:rust && npm run lint:gui",
+    "lint:rust": "cargo clippy --all-features -- -D warnings",
+    "lint:gui": "cd gui && npm run lint",
+    "format": "npm run format:rust && npm run format:gui",
+    "format:rust": "cargo fmt",
+    "format:gui": "cd gui && npm run format",
+    "clean": "cargo clean && rm -rf gui/dist gui/node_modules dist",
+    "install:deps": "cargo --version && cd gui && npm install",
+    "package:electron": "electron-builder",
+    "package:dist": "npm run build && npm run package:tar && npm run package:deb",
+    "package:tar": "tar -czf dist/sview-1.0.0-linux-x86_64.tar.gz -C target/release sview",
+    "package:deb": "scripts/create-deb.sh",
+    "docker:build": "docker build -t sview:1.0.0 .",
+    "docker:run": "docker run -p 8080:8080 sview:1.0.0",
+    "docs": "cargo doc --all-features --no-deps && mdbook build docs",
+    "docs:serve": "mdbook serve docs --port 3000",
+    "examples": "mkdir -p examples && scripts/create-examples.sh",
+    "demo": "npm run examples && sview examples/xqr-dashboard.svg",
+    "benchmark": "cargo bench",
+    "audit": "cargo audit && cd gui && npm audit",
+    "update": "cargo update && cd gui && npm update",
+    "release": "npm run test && npm run build && npm run package:dist",
+    "publish:crates": "cargo publish",
+    "publish:npm": "cd gui && npm publish",
+    "ci": "npm run lint && npm run test && npm run build",
+    "quickstart": "npm run install:deps && npm run examples && npm run build && npm run demo"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0",
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.0",
+    "@electron/rebuild": "^3.2.0",
+    "electron-updater": "^6.1.0"
+  },
+  "dependencies": {
+    "electron-log": "^4.4.0",
+    "electron-store": "^8.1.0"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^8.7.0"
+  },
+  "build": {
+    "appId": "ai.xqr.sview",
+    "productName": "SView",
+    "copyright": "Copyright © 2025 XQR Team",
+    "directories": {
+      "output": "dist",
+      "resources": "resources"
+    },
+    "files": [
+      "gui/**/*",
+      "target/release/sview",
+      "target/release/sview-gui",
+      "examples/**/*",
+      "config/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}"
+    ],
+    "extraResources": [
+      {
+        "from": "target/release/sview",
+        "to": "bin/sview"
+      },
+      {
+        "from": "examples",
+        "to": "examples"
+      },
+      {
+        "from": "config/default.toml",
+        "to": "config/default.toml"
+      }
+    ],
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        },
+        {
+          "target": "tar.gz",
+          "arch": ["x64"]
+        }
+      ],
+      "category": "Utility",
+      "description": "SVG Viewer & PWA Launcher with XQR Integration",
+      "desktop": {
+        "StartupNotify": "true",
+        "MimeType": "image/svg+xml;application/xqr",
+        "Keywords": "svg;viewer;pwa;xqr;file-manager"
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "publisherName": "XQR Technologies"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "category": "public.app-category.productivity",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SView"
+    }
+  },
+  "xqr": {
+    "version": "1.0.0",
+    "features": {
+      "memory_system": true,
+      "pwa_launcher": true,
+      "multi_language": true,
+      "encryption": true,
+      "cross_platform": true
+    },
+    "supported_formats": [
+      "svg",
+      "xqr",
+      "html",
+      "xml"
+    ],
+    "supported_languages": [
+      "javascript",
+      "python",
+      "rust",
+      "go",
+      "ruby",
+      "php",
+      "bash"
+    ]
+  },
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/xqr"
+  }
+}

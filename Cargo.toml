@@ -5,7 +5,7 @@ edition = "2021"
 authors = ["XQR Team <team@xqr.ai>"]
 description = "🧠 SView - SVG Viewer & PWA Launcher with XQR Integration"
 license = "Apache"
-repository = "https://github.com/xqr/sview"
+repository = "https://github.com/veridock/sview"
 keywords = ["svg", "pwa", "viewer", "xqr", "file-manager"]
 categories = ["command-line-utilities", "multimedia", "web-programming"]
 
@@ -49,8 +49,8 @@ image = "0.24"
 palette = "0.7"
 
 # Encryption for XQR security
-aes-gcm = "0.10"
-argon2 = "0.5"
+aes-gcm = { version = "0.10", optional = true }
+argon2 = { version = "0.5", optional = true }
 
 # Configuration management
 config = "0.13"
@@ -64,7 +64,7 @@ crossterm = "0.27"
 ratatui = "0.24"
 
 # File watching
-notify = "6.0"
+notify = { version = "6.0", optional = true }
 
 # Process management
 sysinfo = "0.29"

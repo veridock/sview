@@ -1,0 +1,360 @@
+# SView - Default Configuration
+# File: config/default.toml
+# Description: Domyślna konfiguracja aplikacji SView
+
+[general]
+# Wersja konfiguracji
+version = "1.0.0"
+
+# Nazwa aplikacji
+app_name = "SView"
+
+# Maksymalna głębokość skanowania katalogów
+scan_depth = 10
+
+# Włącz cachowanie miniaturek dla lepszej wydajności
+cache_thumbnails = true
+
+# Maksymalny czas skanowania w sekundach (0 = bez limitu)
+max_scan_time = 30
+
+# Automatyczne aktualizacje aplikacji
+auto_update = true
+
+# Poziom logowania: "trace", "debug", "info", "warn", "error"
+log_level = "info"
+
+# Automatyczne usuwanie starych logów (dni)
+log_retention_days = 30
+
+[browser]
+# Komenda przeglądarki do uruchamiania PWA
+command = "chromium"
+
+# Alternatywne przeglądarki (w kolejności preferencji)
+alternatives = ["google-chrome", "firefox", "microsoft-edge", "safari"]
+
+# Flagi uruchamiania przeglądarki
+flags = [
+    "--app",
+    "--new-window",
+    "--disable-web-security",
+    "--allow-file-access-from-files",
+    "--disable-features=VizDisplayCompositor"
+]
+
+# Port dla serwera lokalnego (0 = losowy port)
+local_server_port = 0
+
+# Timeout uruchamiania przeglądarki (sekundy)
+launch_timeout = 10
+
+[performance]
+# Włącz równoległe skanowanie plików
+parallel_scan = true
+
+# Maksymalna liczba wątków (0 = auto-detect)
+max_threads = 0
+
+# Limit pamięci w MB
+memory_limit = 512
+
+# Rozmiar cache w MB
+cache_size = 100
+
+# Włącz optymalizacje SIMD
+enable_simd = true
+
+# Batch size dla przetwarzania plików
+batch_size = 50
+
+# Timeout dla operacji I/O (ms)
+io_timeout = 5000
+
+[xqr]
+# Włącz obsługę XQR Enhanced SVG
+enabled = true
+
+# Szyfrowanie systemu pamięci
+memory_encryption = true
+
+# Automatyczne ulepszanie standardowych SVG do XQR
+auto_enhance = false
+
+# Algorytm kompresji: "none", "gzip", "brotli", "lz4"
+compression = "gzip"
+
+# Poziom kompresji (1-9, gdzie 9 = maksymalna)
+compression_level = 6
+
+# Automatyczne tworzenie kopii zapasowych
+auto_backup = true
+
+# Maksymalny rozmiar pamięci XQR w MB
+max_memory_size = 50
+
+[security]
+# Algorytm szyfrowania
+encryption_algorithm = "AES-256-GCM"
+
+# Funkcja derywacji kluczy
+key_derivation = "Argon2id"
+
+# Parametry Argon2id
+argon2_memory = 65536      # KB
+argon2_iterations = 3
+argon2_parallelism = 4
+
+# Automatyczna rotacja kluczy (dni)
+key_rotation_days = 90
+
+# Włącz dziennik audytu
+audit_trail = true
+
+# Klasyfikacja danych: "public", "internal", "confidential", "restricted"
+data_classification = "internal"
+
+# Włącz weryfikację integralności plików
+integrity_checks = true
+
+# Timeout dla operacji kryptograficznych (ms)
+crypto_timeout = 1000
+
+[languages]
+# Obsługiwane języki programowania
+supported = [
+    "javascript",
+    "python",
+    "rust",
+    "go",
+    "ruby",
+    "php",
+    "bash",
+    "powershell"
+]
+
+# Timeout wykonywania kodu (sekundy)
+execution_timeout = 30
+
+# Limit pamięci dla wykonywania kodu (MB)
+execution_memory_limit = 128
+
+# Włącz sandboxing dla bezpieczeństwa
+enable_sandbox = true
+
+# Dozwolone operacje w sandboxie
+sandbox_allowed_operations = [
+    "console.log",
+    "math",
+    "string_operations"
+]
+
+[ui]
+# Domyślna liczba kolumn w widoku grid
+default_columns = 4
+
+# Domyślny widok: "grid" lub "list"
+default_view = "grid"
+
+# Motyw: "light", "dark", "auto"
+theme = "auto"
+
+# Włącz animacje interfejsu
+animations = true
+
+# Prędkość animacji: "slow", "normal", "fast"
+animation_speed = "normal"
+
+# Rozmiar miniaturek w pixelach
+thumbnail_size = 120
+
+# Pokazuj ukryte pliki
+show_hidden_files = false
+
+# Automatyczne odświeżanie listy plików (sekundy, 0 = wyłączone)
+auto_refresh_interval = 0
+
+# Maksymalna liczba wyników wyszukiwania
+max_search_results = 1000
+
+[paths]
+# Domyślne ścieżki do skanowania
+scan_paths = [
+    "~/Documents",
+    "~/Desktop",
+    "~/Downloads",
+    "~/Pictures"
+]
+
+# Wykluczane katalogi
+exclude_paths = [
+    "node_modules",
+    ".git",
+    ".svn",
+    ".hg",
+    "target",
+    "build",
+    "dist",
+    "__pycache__",
+    ".cache",
+    "tmp",
+    "temp"
+]
+
+# Wykluczane wzorce plików (regex)
+exclude_patterns = [
+    ".*\\.tmp$",
+    ".*\\.bak$",
+    ".*~$",
+    ".*\\.swp$"
+]
+
+# Maksymalny rozmiar pliku do skanowania (MB)
+max_file_size = 10
+
+# Ścieżka do katalogu cache
+cache_dir = "~/.sview/cache"
+
+# Ścieżka do katalogu konfiguracji
+config_dir = "~/.sview/config"
+
+# Ścieżka do katalogu logów
+log_dir = "~/.sview/logs"
+
+[memory]
+# Konfiguracja systemu pamięci XQR
+
+# Włącz różne typy pamięci
+enable_factual = true
+enable_episodic = true
+enable_semantic = true
+enable_working = true
+
+# Maksymalny rozmiar każdego typu pamięci (MB)
+factual_max_size = 10
+episodic_max_size = 20
+semantic_max_size = 15
+working_max_size = 5
+
+# Automatyczne czyszczenie starych wpisów
+auto_cleanup = true
+
+# Wiek wpisów do usunięcia (dni)
+episodic_retention_days = 30
+working_retention_hours = 24
+
+# Próg podobieństwa dla wyszukiwania semantycznego (0.0 - 1.0)
+semantic_similarity_threshold = 0.7
+
+# Włącz kompresję pamięci
+compress_memory = true
+
+# Automatyczny eksport pamięci
+auto_export = false
+export_interval_hours = 24
+
+[networking]
+# Konfiguracja sieciowa (dla trybu serwera)
+
+# Domyślny port serwera
+default_port = 8080
+
+# Interfejs do nasłuchiwania
+bind_address = "127.0.0.1"
+
+# Włącz CORS
+enable_cors = true
+
+# Dozwolone origins dla CORS
+cors_origins = ["http://localhost:*", "https://localhost:*"]
+
+# Timeout połączeń (sekundy)
+connection_timeout = 30
+
+# Maksymalna liczba jednoczesnych połączeń
+max_connections = 100
+
+# Włącz HTTPS
+enable_https = false
+
+# Ścieżki do certyfikatów SSL
+ssl_cert_path = ""
+ssl_key_path = ""
+
+[features]
+# Eksperymentalne funkcje
+
+# Włącz obsługę WebGL w PWA
+enable_webgl = false
+
+# Włącz obsługę WebAssembly
+enable_wasm = true
+
+# Włącz integrację z AI
+enable_ai_integration = false
+
+# Klucz API dla usług AI (jeśli włączone)
+ai_api_key = ""
+
+# Model AI do użycia
+ai_model = "gpt-4"
+
+# Włącz funkcje współpracy
+enable_collaboration = false
+
+# Włącz synchronizację z chmurą
+enable_cloud_sync = false
+
+# Włącz tryb offline
+enable_offline_mode = true
+
+# Włącz metryki wydajności
+enable_performance_metrics = true
+
+[notifications]
+# System powiadomień
+
+# Włącz powiadomienia systemowe
+enable_system_notifications = true
+
+# Włącz powiadomienia w aplikacji
+enable_in_app_notifications = true
+
+# Powiadom o zakończeniu długich operacji
+notify_on_completion = true
+
+# Powiadom o błędach
+notify_on_errors = true
+
+# Powiadom o aktualizacjach
+notify_on_updates = true
+
+# Dźwięk powiadomień
+notification_sound = true
+
+[advanced]
+# Zaawansowane ustawienia
+
+# Włącz tryb debugowania
+debug_mode = false
+
+# Włącz telemetrię (anonimowe dane użytkowania)
+enable_telemetry = false
+
+# Włącz crash reporting
+enable_crash_reporting = true
+
+# Eksperymentalne optymalizacje
+enable_experimental_optimizations = false
+
+# Verbose logging dla rozwoju
+verbose_logging = false
+
+# Profiling wydajności
+enable_profiling = false
+
+# Maksymalny rozmiar pliku loga (MB)
+max_log_file_size = 10
+
+# Liczba rotowanych plików logów
+log_rotation_count = 5
