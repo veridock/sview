@@ -82,7 +82,7 @@ flags = ["--app", "--new-window", "--disable-web-security"]
 [performance]
 parallel_scan = true
 max_threads = 0  # 0 = auto-detect
-memory_liApache = "512MB"
+memory_limit = "512MB"
 
 [xqr]
 enabled = true
