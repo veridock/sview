@@ -2,6 +2,7 @@
 venv
 .venv
 sview
+Cargo.lock
 .idea
 # Byte-compiled / optimized / DLL files
 __pycache__/

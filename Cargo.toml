@@ -8,14 +8,19 @@ license = "Apache"
 repository = "https://github.com/veridock/sview"
 keywords = ["svg", "pwa", "viewer", "xqr", "file-manager"]
 categories = ["command-line-utilities", "multimedia", "web-programming"]
+default-run = "sview"
 
 [dependencies]
+# Error handling
+anyhow = "1.0"
+
 # CLI & Argument parsing
 clap = { version = "4.0", features = ["derive"] }
 
 # File system operations
 walkdir = "2.3"
 dirs = "5.0"
+opener = "0.6"
 
 # Parallel processing
 rayon = "1.7"
@@ -24,10 +29,8 @@ rayon = "1.7"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
-# Base64 encoding
+# Encoding
 base64 = "0.21"
-
-# URL encoding
 percent-encoding = "2.3"
 
 # Date/time handling

@@ -214,10 +214,10 @@ fn list_files(args: &ListArgs, verbose: bool) -> Result<()> {
     // Display files
     for file in sorted_files {
         if args.long {
-            let modified = file.modied
+            let modified = file.modified
                 .and_then(|t| t.duration_since(SystemTime::UNIX_EPOCH).ok())
                 .map(|d| {
-                    let dt = Local.timestamp(d.as_secs() as i64, 0);
+                    let dt = Local::now() - chrono::Duration::from_std(d).unwrap_or_default();
                     dt.format("%Y-%m-%d %H:%M").to_string()
                 })
                 .unwrap_or_else(|| "unknown".to_string());

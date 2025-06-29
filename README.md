@@ -98,6 +98,89 @@ sview /home/user/projects/chart.svg
 # Uruchom interfejs graficzny
 sview --grid
 sview-gui  # jeśli zainstalowany
+```
+
+### 🔍 Wyszukiwanie plików z `sview ls`
+
+Komenda `sview ls` umożliwia efektywne wyszukiwanie i wyświetlanie plików SVG z zaawansowanymi opcjami filtrowania i sortowania.
+
+#### Podstawowe użycie
+
+```bash
+# Lista plików SVG w bieżącym katalogu
+sview ls
+
+# Lista plików w określonym katalogu
+sview ls /ścieżka/do/katalogu
+
+# Szczegółowe wyjście z dodatkowymi informacjami
+sview ls -l
+sview ls --long
+
+# Sortowanie wyników
+sview ls --sort=name     # domyślnie
+sview ls --sort=size     # rozmiar pliku
+sview ls --sort=modified # data modyfikacji
+
+# Odwrócenie kolejności sortowania
+sview ls -r
+sview ls --reverse
+
+# Filtrowanie po rozszerzeniu
+sview ls --format=svg    # tylko pliki SVG (domyślnie)
+sview ls --format=xml     # pliki XML
+sview ls --format=json    # pliki JSON
+```
+
+#### Zaawansowane opcje wyszukiwania
+
+```bash
+# Wyszukiwanie rekurencyjne w podkatalogach
+sview ls -R
+sview ls --recursive
+
+# Ograniczenie głębokości wyszukiwania
+sview ls --max-depth=2
+
+# Filtrowanie po rozmiarze pliku
+sview ls --min-size=1M    # pliki większe niż 1MB
+sview ls --max-size=10M   # pliki mniejsze niż 10MB
+
+# Wykluczanie katalogów
+sview ls --exclude .git --exclude node_modules
+
+# Wyszukiwanie z użyciem wzorców
+sview ls "*dashboard*"    # pliki zawierające 'dashboard' w nazwie
+```
+
+#### Przykłady użycia w praktyce
+
+```bash
+# Znajdź ostatnio zmodyfikowane pliki SVG
+sview ls -l --sort=modified -r | head -n 10
+
+# Znajdź duże pliki SVG w projekcie
+sview ls /projekt --min-size=5M -l
+
+# Przeszukaj katalog z wyłączeniem katalogów tymczasowych
+sview ls /dokumenty --exclude tmp --exclude temp
+
+# Eksport wyników do pliku JSON
+sview ls -l --format=json > pliki.json
+```
+
+#### Integracja z innymi narzędziami
+
+```bash
+# Przeszukaj zawartość plików SVG
+sview ls | xargs grep -l "keyword"
+
+# Usuń stare pliki tymczasowe starsze niż 30 dni
+sview ls --format=tmp --min-age=30 | xargs rm -f
+
+# Oblicz całkowity rozmiar plików SVG
+sview ls -l | awk '{sum += $1} END {print sum}'
+```
 
 # Pomoc
 sview --help
