@@ -658,10 +658,3 @@ status:
 		echo "  GUI Binary: ❌ Not built"; \
 	fi
 	@echo ""
-
-# All-in-one target for complete setup
-.PHONY: setup
-setup: dev-setup quickstart
-	@echo "$(GREEN)🎉 Complete setup finished!$(NC)"
-	@echo "$(CYAN)🚀 You're ready to use SView!$(NC)"
-	@echo ""
