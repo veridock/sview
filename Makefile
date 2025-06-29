@@ -2,31 +2,35 @@
 # Makefile for project management
 
 # Variables
-PROJECT_NAME = sview
-VERSION = 1.0.0
-RUST_VERSION = 1.70
-NODE_VERSION = 18
+export PROJECT_NAME = sview
+export VERSION = 1.0.0
+export RUST_VERSION = 1.70
+export NODE_VERSION = 18
 
 # Directories
-SRC_DIR = src
-GUI_DIR = gui
-DIST_DIR = dist
-TARGET_DIR = target
-EXAMPLES_DIR = examples
-DOCS_DIR = docs
+export SRC_DIR = src
+export GUI_DIR = gui
+export DIST_DIR = dist
+export TARGET_DIR = target
+export EXAMPLES_DIR = examples
+export DOCS_DIR = docs
 
-# Build configurations
-CARGO_FLAGS = --release --all-features
-NPM_FLAGS = --production
+# Build configuration
+export CARGO_FLAGS = --release --no-default-features --features=encryption,watch
+export NPM_FLAGS = --production
+export RUSTFLAGS = -C target-cpu=native
+
+# Scripts directory
+SCRIPTS_DIR = scripts
 
 # Colors for output
-RED = \033[0;31m
-GREEN = \033[0;32m
-YELLOW = \033[0;33m
-BLUE = \033[0;34m
-PURPLE = \033[0;35m
-CYAN = \033[0;36m
-NC = \033[0m # No Color
+export RED = \033[0;31m
+export GREEN = \033[0;32m
+export YELLOW = \033[0;33m
+export BLUE = \033[0;34m
+export PURPLE = \033[0;35m
+export CYAN = \033[0;36m
+export NC = \033[0m # No Color
 
 # Default target
 .PHONY: all
@@ -77,49 +81,22 @@ help:
 # Check requirements
 .PHONY: check-requirements
 check-requirements:
-	@echo "$(BLUE)📋 Checking requirements...$(NC)"
-	@command -v rustc >/dev/null 2>&1 || { echo "$(RED)❌ Rust not found$(NC)"; exit 1; }
-	@command -v cargo >/dev/null 2>&1 || { echo "$(RED)❌ Cargo not found$(NC)"; exit 1; }
-	@echo "$(GREEN)✅ Rust $(shell rustc --version) found$(NC)"
-	@if command -v node >/dev/null 2>&1; then \
-		echo "$(GREEN)✅ Node.js $(shell node --version) found$(NC)"; \
-	else \
-		echo "$(YELLOW)⚠️  Node.js not found - GUI will not be available$(NC)"; \
-	fi
-	@echo ""
+	@$(SCRIPTS_DIR)/check_requirements.sh
 
 # Install dependencies
 .PHONY: install-deps
-install-deps: check-requirements
-	@echo "$(BLUE)📦 Installing dependencies...$(NC)"
-	@cargo --version
-	@if [ -f "$(GUI_DIR)/package.json" ]; then \
-		cd $(GUI_DIR) && npm install; \
-		echo "$(GREEN)✅ Node.js dependencies installed$(NC)"; \
-	fi
-	@echo "$(GREEN)✅ Dependencies installed$(NC)"
-	@echo ""
+install-deps:
+	@$(SCRIPTS_DIR)/install_deps.sh
 
 # Build CLI application
 .PHONY: build
-build: install-deps
-	@echo "$(BLUE)🔧 Building CLI application...$(NC)"
-	@cargo build $(CARGO_FLAGS)
-	@echo "$(GREEN)✅ CLI build completed$(NC)"
-	@echo "📍 Binary location: $(TARGET_DIR)/release/$(PROJECT_NAME)"
-	@echo ""
+build:
+	@$(SCRIPTS_DIR)/build_cli.sh
 
 # Build GUI application
 .PHONY: build-gui
-build-gui: install-deps
-	@echo "$(BLUE)🎨 Building GUI application...$(NC)"
-	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm run build; \
-		echo "$(GREEN)✅ GUI build completed$(NC)"; \
-	else \
-		echo "$(YELLOW)⚠️  GUI directory not found$(NC)"; \
-	fi
-	@echo ""
+build-gui:
+	@$(SCRIPTS_DIR)/build_gui.sh
 
 # Build everything
 .PHONY: build-all
@@ -129,245 +106,207 @@ build-all: build build-gui
 
 # Development mode
 .PHONY: dev
-dev: install-deps
-	@echo "$(BLUE)🚀 Starting development mode...$(NC)"
-	@cargo run -- --help
+dev:
+	@echo "$(BLUE)🚀 Starting development server...$(NC)"
+	@cargo watch -x run
 
 # GUI development mode
 .PHONY: dev-gui
-dev-gui: install-deps
-	@echo "$(BLUE)🎨 Starting GUI development server...$(NC)"
-	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm run dev; \
-	else \
-		echo "$(RED)❌ GUI directory not found$(NC)"; \
-	fi
+dev-gui:
+	@echo "$(BLUE)🚀 Starting GUI development server...$(NC)"
+	@cd $(GUI_DIR) && npm run dev
 
 # Run tests
 .PHONY: test
 test:
-	@echo "$(BLUE)🧪 Running tests...$(NC)"
-	@cargo test --all-features
-	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm test; \
-	fi
-	@echo "$(GREEN)✅ Tests completed$(NC)"
-	@echo ""
+	@$(SCRIPTS_DIR)/run_tests.sh
 
-# Test coverage
+# Run tests with coverage
 .PHONY: test-coverage
 test-coverage:
-	@echo "$(BLUE)📊 Running test coverage...$(NC)"
-	@cargo install cargo-tarpaulin --locked
-	@cargo tarpaulin --all-features --out html --output-dir coverage/
-	@echo "$(GREEN)✅ Coverage report generated in coverage/$(NC)"
-	@echo ""
+	@echo "$(BLUE)📊 Running tests with coverage...$(NC)"
+	@$(SCRIPTS_DIR)/run_tests.sh --coverage
 
-# Linting
+# Run linters
 .PHONY: lint
 lint:
 	@echo "$(BLUE)🔍 Running linters...$(NC)"
-	@cargo clippy --all-features -- -D warnings
+	@cargo clippy -- -D warnings
 	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm run lint; \
+		echo "$(YELLOW)Running ESLint...$(NC)"; \
+		cd $(GUI_DIR) && npx eslint . --ext .js,.jsx,.ts,.tsx; \
 	fi
-	@echo "$(GREEN)✅ Linting completed$(NC)"
-	@echo ""
 
 # Format code
 .PHONY: format
 format:
-	@echo "$(BLUE)📝 Formatting code...$(NC)"
-	@cargo fmt
+	@echo "$(BLUE)🎨 Formatting code...$(NC)"
+	@cargo fmt --all
 	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm run format; \
+		echo "$(YELLOW)Formatting frontend code...$(NC)"; \
+		cd $(GUI_DIR) && npx prettier --write .; \
 	fi
-	@echo "$(GREEN)✅ Code formatted$(NC)"
-	@echo ""
 
 # Install locally
 .PHONY: install
-install: build
-	@echo "$(BLUE)📦 Installing SView locally...$(NC)"
-	@mkdir -p ~/.local/bin
-	@mkdir -p ~/.sview/{cache,config,logs}
-	@cp $(TARGET_DIR)/release/$(PROJECT_NAME) ~/.local/bin/
-	@if [ -f "$(TARGET_DIR)/release/$(PROJECT_NAME)-gui" ]; then \
-		cp $(TARGET_DIR)/release/$(PROJECT_NAME)-gui ~/.local/bin/; \
-	fi
-	@echo "$(GREEN)✅ SView installed to ~/.local/bin/$(NC)"
-	@echo "💡 Add ~/.local/bin to your PATH if not already done"
-	@echo "   export PATH=\"$$HOME/.local/bin:$$PATH\""
-	@echo ""
+install:
+	@$(SCRIPTS_DIR)/install.sh
 
 # Uninstall
 .PHONY: uninstall
 uninstall:
 	@echo "$(BLUE)🗑️  Uninstalling SView...$(NC)"
 	@rm -f ~/.local/bin/$(PROJECT_NAME)
-	@rm -f ~/.local/bin/$(PROJECT_NAME)-gui
 	@rm -rf ~/.sview
-	@echo "$(GREEN)✅ SView uninstalled$(NC)"
-	@echo ""
+	@echo "$(GREEN)✅ SView has been uninstalled$(NC)"
 
 # Clean build artifacts
 .PHONY: clean
 clean:
-	@echo "$(BLUE)🧹 Cleaning build artifacts...$(NC)"
-	@cargo clean
-	@rm -rf $(DIST_DIR)
-	@if [ -d "$(GUI_DIR)/dist" ]; then \
-		rm -rf $(GUI_DIR)/dist; \
-	fi
-	@if [ -d "$(GUI_DIR)/node_modules" ]; then \
-		rm -rf $(GUI_DIR)/node_modules; \
-	fi
-	@echo "$(GREEN)✅ Cleaned$(NC)"
-	@echo ""
+	@$(SCRIPTS_DIR)/clean.sh
 
 # Clean cache
 .PHONY: clean-cache
 clean-cache:
 	@echo "$(BLUE)🧹 Cleaning cache...$(NC)"
-	@rm -rf ~/.sview/cache/*
 	@cargo clean
-	@if command -v npm >/dev/null 2>&1; then \
-		npm cache clean --force; \
+	@if [ -d "$(GUI_DIR)" ]; then \
+		cd $(GUI_DIR) && rm -rf node_modules; \
 	fi
-	@echo "$(GREEN)✅ Cache cleaned$(NC)"
-	@echo ""
 
 # Update dependencies
 .PHONY: update
 update:
 	@echo "$(BLUE)🔄 Updating dependencies...$(NC)"
 	@cargo update
-	@if [ -f "$(GUI_DIR)/package.json" ]; then \
+	@if [ -d "$(GUI_DIR)" ]; then \
 		cd $(GUI_DIR) && npm update; \
 	fi
-	@echo "$(GREEN)✅ Dependencies updated$(NC)"
-	@echo ""
 
 # Check project health
 .PHONY: check
-check: check-requirements
+check:
 	@echo "$(BLUE)🔍 Checking project health...$(NC)"
-	@cargo check --all-features
-	@cargo audit
+	@cargo check
 	@if [ -d "$(GUI_DIR)" ]; then \
 		cd $(GUI_DIR) && npm audit; \
 	fi
-	@echo "$(GREEN)✅ Project health check completed$(NC)"
-	@echo ""
 
 # Generate documentation
 .PHONY: docs
 docs:
 	@echo "$(BLUE)📚 Generating documentation...$(NC)"
-	@cargo doc --all-features --no-deps
-	@mkdir -p $(DOCS_DIR)
-	@if command -v mdbook >/dev/null 2>&1; then \
-		mdbook build $(DOCS_DIR); \
-	else \
-		echo "$(YELLOW)⚠️  mdbook not found - install with: cargo install mdbook$(NC)"; \
+	@cargo doc --no-deps
+	@if [ -d "$(GUI_DIR)" ]; then \
+		cd $(GUI_DIR) && npm run docs; \
 	fi
-	@echo "$(GREEN)✅ Documentation generated$(NC)"
-	@echo "📍 View at: target/doc/$(PROJECT_NAME)/index.html"
-	@echo ""
 
 # Serve documentation locally
 .PHONY: docs-serve
-docs-serve: docs
-	@echo "$(BLUE)🌐 Serving documentation...$(NC)"
-	@echo "$(CYAN)📖 Opening http://localhost:3000$(NC)"
-	@if command -v mdbook >/dev/null 2>&1; then \
-		mdbook serve $(DOCS_DIR) --port 3000; \
-	else \
-		python3 -m http.server 3000 -d target/doc; \
-	fi
+docs-serve:
+	@echo "$(BLUE)🌐 Serving documentation at http://localhost:3000$(NC)"
+	@cd target/doc && python3 -m http.server 3000
 
 # Create example files
 .PHONY: examples
 examples:
-	@echo "$(BLUE)📁 Creating example files...$(NC)"
-	@mkdir -p $(EXAMPLES_DIR)
-	
-	@# Simple SVG chart
-	@cat > $(EXAMPLES_DIR)/simple-chart.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
-  <rect width="400" height="300" fill="#f8f9fa"/>
-  <text x="200" y="30" text-anchor="middle" font-family="Arial" font-size="18" fill="#333">Sales Chart</text>
-  <rect x="50" y="200" width="40" height="80" fill="#4CAF50"/>
-  <rect x="120" y="150" width="40" height="130" fill="#2196F3"/>
-  <rect x="190" y="100" width="40" height="180" fill="#FF9800"/>
-  <rect x="260" y="170" width="40" height="110" fill="#E91E63"/>
-  <text x="70" y="295" text-anchor="middle" font-size="12" fill="#666">Q1</text>
-  <text x="140" y="295" text-anchor="middle" font-size="12" fill="#666">Q2</text>
-  <text x="210" y="295" text-anchor="middle" font-size="12" fill="#666">Q3</text>
-  <text x="280" y="295" text-anchor="middle" font-size="12" fill="#666">Q4</text>
-</svg>
-EOF
-
+	@$(SCRIPTS_DIR)/generate_examples.sh
 	@# XQR Enhanced Dashboard
-	@cat > $(EXAMPLES_DIR)/xqr-dashboard.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" 
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true" width="800" height="600" viewBox="0 0 800 600">
-  <metadata>
-    <xqr:memory>
-      <xqr:factual>{"user": "demo", "preferences": {"theme": "dark"}}</xqr:factual>
-      <xqr:working>{"currentView": "dashboard"}</xqr:working>
-    </xqr:memory>
-    <xqr:config>
-      {"version": "1.0", "interactive": true, "pwa_capable": true, "memory_enabled": true}
-    </xqr:config>
-  </metadata>
-  <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#667eea"/>
-      <stop offset="100%" stop-color="#764ba2"/>
-    </linearGradient>
-  </defs>
-  <rect width="800" height="600" fill="url(#bgGradient)"/>
-  <rect x="0" y="0" width="800" height="80" fill="rgba(255,255,255,0.1)"/>
-  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 XQR Dashboard</text>
-  <g xqr:interactive="true" xqr:data-binding="sales_data">
-    <rect x="50" y="120" width="300" height="200" fill="rgba(255,255,255,0.9)" rx="10"/>
-    <text x="200" y="145" text-anchor="middle" font-family="Arial" font-size="16" fill="#333">Interactive Sales Data</text>
-  </g>
-  <script type="application/javascript">
-    window.xqrMemory = {
-      factual: { user: "demo", preferences: { theme: "dark" } },
-      working: { currentView: "dashboard" },
-      episodic: [], semantic: []
-    };
-    console.log('🧠 XQR Enhanced Dashboard initialized');
-  </script>
-</svg>
-EOF
+	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '     xqr:enhanced="true" width="800" height="600" viewBox="0 0 800 600">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <metadata>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <xqr:factual>{"user": "demo", "preferences": {"theme": "dark"}}</xqr:factual>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <xqr:working>{"currentView": "dashboard"}</xqr:working>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <xqr:config>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      {"version": "1.0", "interactive": true, "pwa_capable": true, "memory_enabled": true}' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </xqr:config>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  </metadata>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <defs>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <stop offset="0%" stop-color="#667eea"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <stop offset="100%" stop-color="#764ba2"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </linearGradient>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  </defs>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <rect width="800" height="600" fill="url(#bgGradient)"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <rect x="0" y="0" width="800" height="80" fill="rgba(255,255,255,0.1)"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 XQR Dashboard</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <g xqr:interactive="true" xqr:data-binding="sales_data">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="40" y="120" width="720" height="400" rx="10" fill="rgba(255,255,255,0.9)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <text x="60" y="160" font-family="Arial" font-size="20" fill="#2d3748">Sales Overview</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <line x1="60" y1="180" x2="740" y2="180" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <!-- Chart content would be dynamically populated by XQR -->' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="100" y="250" width="40" height="200" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="200" dur="1s" fill="freeze"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="200" y="300" width="40" height="150" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="150" dur="1s" fill="freeze" begin="0.2s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="300" y="200" width="40" height="250" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="250" dur="1s" fill="freeze" begin="0.4s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="400" y="150" width="40" height="300" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="300" dur="1s" fill="freeze" begin="0.6s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="500" y="220" width="40" height="230" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="230" dur="1s" fill="freeze" begin="0.8s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="600" y="180" width="40" height="270" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="270" dur="1s" fill="freeze" begin="1s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <g xqr:interactive="true" xqr:onclick="showDetails('"'"'performance'"'"')">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="40" y="550" width="350" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <text x="60" y="572" font-family="Arial" font-size="14" fill="white">🔍 Click for Performance Details</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  <g xqr:interactive="true" xqr:onclick="showDetails('"'"'settings'"'"')">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <rect x="430" y="550" width="330" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '    <text x="450" y="572" font-family="Arial" font-size="14" fill="white">⚙️ Configure Dashboard Settings</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@echo '</svg>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
 
 	@# Interactive Pong Game
-	@cat > $(EXAMPLES_DIR)/pong-game.svg << 'EOF'
-<svg xmlns="http://www.w3.org/2000/svg" 
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true" width="600" height="400" viewBox="0 0 600 400">
-  <metadata>
-    <xqr:memory>
-      <xqr:factual>{"highScore": 0, "player": "guest"}</xqr:factual>
-      <xqr:working>{"gameState": "ready", "score": 0}</xqr:working>
-    </xqr:memory>
-  </metadata>
-  <rect width="600" height="400" fill="#1a1a1a"/>
-  <line x1="300" y1="0" x2="300" y2="400" stroke="#333" stroke-width="2" stroke-dasharray="10,10"/>
-  <rect id="leftPaddle" x="20" y="150" width="10" height="100" fill="white"/>
-  <rect id="rightPaddle" x="570" y="150" width="10" height="100" fill="white"/>
-  <circle id="ball" cx="300" cy="200" r="8" fill="white"/>
-  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 XQR Pong - Click to Start</text>
-  <script type="application/javascript">
-    console.log('🎮 XQR Pong Game loaded - click to start!');
-  </script>
-</svg>
-EOF
+	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/pong-game.svg
+	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '     xqr:enhanced="true" width="600" height="400" viewBox="0 0 600 400">' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <metadata>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      <xqr:factual>{"highScore": 0, "player": "guest"}</xqr:factual>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      <xqr:working>{"gameState": "ready", "score": 0}</xqr:working>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  </metadata>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <rect width="600" height="400" fill="#1a1a1a"/>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <line x1="300" y1="0" x2="300" y2="400" stroke="#333" stroke-width="2" stroke-dasharray="10,10"/>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <rect id="leftPaddle" x="20" y="150" width="10" height="100" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <rect id="rightPaddle" x="570" y="150" width="10" height="100" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <circle id="ball" cx="300" cy="200" r="8" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 XQR Pong - Click to Start</text>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <script type="application/javascript">' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    console.log('"'"'🎮 XQR Pong Game loaded - click to start!'"'"');' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    document.querySelector('"'"'svg'"'"').addEventListener('"'"'click'"'"', () => {' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      const event = new CustomEvent('"'"'xqr:interaction'"'"', {' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '        detail: { type: '"'"'game_start'"'"', player: '"'"'user'"'"' }' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      });' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      document.dispatchEvent(event);' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    });' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  </script>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '</svg>' >> $(EXAMPLES_DIR)/pong-game.svg
+
+	@# Minimal Memory Example
+	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '     xqr:enhanced="true" width="400" height="200" viewBox="0 0 400 200">' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '  <metadata>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '      <xqr:factual>{"type": "minimal"}</xqr:factual>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '  </metadata>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '</svg>' >> $(EXAMPLES_DIR)/minimal-memory.svg
 
 	@echo "$(GREEN)✅ Example files created in $(EXAMPLES_DIR)/$(NC)"
 	@echo "📁 Files:"
@@ -406,17 +345,16 @@ package: release
 	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/share/doc/$(PROJECT_NAME)
 	
 	@# Control file for .deb
-	@cat > $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control << EOF
-Package: $(PROJECT_NAME)
-Version: $(VERSION)
-Section: utils
-Priority: optional
-Architecture: amd64
-Maintainer: XQR Team <team@xqr.ai>
-Description: SVG Viewer & PWA Launcher with XQR Integration
- SView is an advanced tool for managing, viewing and running SVG files
- as PWA applications with XQR memory system integration.
-EOF
+	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN
+	@echo 'Package: $(PROJECT_NAME)' > $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Version: $(VERSION)' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Section: utils' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Priority: optional' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Architecture: amd64' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Maintainer: XQR Team <team@xqr.ai>' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo 'Description: SVG Viewer & PWA Launcher with XQR Integration' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo ' SView is an advanced tool for managing, viewing and running SVG files' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
+	@echo ' as PWA applications with XQR memory system integration.' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
 	
 	@# Copy files to .deb structure
 	@cp $(DIST_DIR)/$(PROJECT_NAME) $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/bin/
@@ -450,21 +388,21 @@ EOF
 .PHONY: docker
 docker:
 	@echo "$(BLUE)🐳 Building Docker image...$(NC)"
-	@cat > Dockerfile << 'EOF'
-FROM rust:1.70 as builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release --all-features
-
-FROM ubuntu:22.04
-RUN apt-get update && apt-get install -y \
-    chromium-browser \
-    && rm -rf /var/lib/apt/lists/*
-COPY --from=builder /app/target/release/sview /usr/local/bin/
-COPY --from=builder /app/examples /usr/share/sview/examples
-EXPOSE 8080
-CMD ["sview", "serve", "--port", "8080"]
-EOF
+	@echo 'FROM rust:1.70 as builder' > Dockerfile
+	@echo 'WORKDIR /app' >> Dockerfile
+	@echo 'COPY . .' >> Dockerfile
+	@echo 'RUN cargo build --release --all-features' >> Dockerfile
+	@echo '' >> Dockerfile
+	@echo 'FROM ubuntu:22.04' >> Dockerfile
+	@echo 'RUN apt-get update && apt-get install -y \' >> Dockerfile
+	@echo '    chromium-browser \' >> Dockerfile
+	@echo '    && rm -rf /var/lib/apt/lists/*' >> Dockerfile
+	@echo 'COPY --from=builder /app/target/release/sview /usr/local/bin/' >> Dockerfile
+	@echo 'COPY --from=builder /app/examples /usr/share/sview/examples' >> Dockerfile
+	@echo 'EXPOSE 8080' >> Dockerfile
+	@echo 'WORKDIR /data' >> Dockerfile
+	@echo 'ENTRYPOINT ["sview", "serve"]' >> Dockerfile
+	@echo 'CMD ["--port", "8080"]' >> Dockerfile
 	@docker build -t $(PROJECT_NAME):$(VERSION) .
 	@docker tag $(PROJECT_NAME):$(VERSION) $(PROJECT_NAME):latest
 	@echo "$(GREEN)✅ Docker image built$(NC)"
@@ -473,38 +411,12 @@ EOF
 
 # Publish to registries
 .PHONY: publish
-publish: package
-	@echo "$(BLUE)📤 Publishing to registries...$(NC)"
-	
-	@# Cargo publish
-	@echo "Publishing to crates.io..."
-	@cargo publish --dry-run
-	@read -p "Publish to crates.io? (y/N): " confirm; \
-	if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then \
-		cargo publish; \
-		echo "$(GREEN)✅ Published to crates.io$(NC)"; \
-	fi
-	
-	@# npm publish (if GUI exists)
-	@if [ -d "$(GUI_DIR)" ]; then \
-		echo "Publishing GUI to npm..."; \
-		cd $(GUI_DIR) && npm publish --dry-run; \
-		read -p "Publish GUI to npm? (y/N): " confirm; \
-		if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then \
-			cd $(GUI_DIR) && npm publish; \
-			echo "$(GREEN)✅ Published GUI to npm$(NC)"; \
-		fi; \
-	fi
-	
-	@# Docker Hub publish
-	@read -p "Publish to Docker Hub? (y/N): " confirm; \
-	if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then \
-		docker push $(PROJECT_NAME):$(VERSION); \
-		docker push $(PROJECT_NAME):latest; \
-		echo "$(GREEN)✅ Published to Docker Hub$(NC)"; \
-	fi
-	
-	@echo "$(GREEN)✅ Publishing completed$(NC)"
+publish:
+	@$(SCRIPTS_DIR)/publish.sh
+# Push changes to remote repository
+.PHONY: push
+push:
+	@$(SCRIPTS_DIR)/push.sh
 	@echo ""
 
 # Benchmark

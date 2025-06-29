@@ -78,11 +78,14 @@ assert_cmd = "2.0"
 predicates = "3.0"
 
 [features]
-default = ["gui", "encryption", "watch"]
-gui = []
+default = ["encryption", "watch"]
+gui = ["tauri"]
 encryption = ["aes-gcm", "argon2"]
 watch = ["notify"]
 experimental = []
+
+# GUI-specific dependencies
+tauri = []
 
 [[bin]]
 name = "sview"

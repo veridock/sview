@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::time::Duration;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use std::thread;
 
+#[derive(Clone)]
 pub struct WorkingMemory {
-    buffer: Mutex<HashMap<String, MemoryItem>>,
+    buffer: Arc<Mutex<HashMap<String, MemoryItem>>>,
     max_items: usize,
     timeout: Duration,
 }
@@ -18,7 +19,7 @@ struct MemoryItem {
 impl WorkingMemory {
     pub fn new(max_items: usize, timeout_seconds: u64) -> Self {
         WorkingMemory {
-            buffer: Mutex::new(HashMap::new()),
+            buffer: Arc::new(Mutex::new(HashMap::new())),
             max_items,
             timeout: Duration::from_secs(timeout_seconds),
         }
@@ -66,17 +67,30 @@ impl WorkingMemory {
         buffer.clear();
     }
 
-    pub fn start_cleanup_thread(&self) {
-        let buffer = self.buffer.clone();
+    pub fn start_cleanup_thread(&self) -> std::thread::JoinHandle<()> {
+        // Clone the Arc that contains the Mutex
+        let buffer = Arc::clone(&self.buffer);
         let timeout = self.timeout;
 
-        thread::spawn(move || loop {
-            thread::sleep(timeout);
-            let mut buffer = buffer.lock().unwrap();
-            
-            buffer.retain(|_, item| {
-                std::time::Instant::now().duration_since(item.last_accessed) < timeout
-            });
-        });
+        thread::spawn(move || {
+            loop {
+                thread::sleep(timeout);
+                
+                // Lock the mutex and clean up old entries
+                let mut buffer_guard = match buffer.lock() {
+                    Ok(guard) => guard,
+                    Err(poisoned) => {
+                        // Try to recover from a poisoned lock
+                        println!("Warning: Mutex was poisoned, attempting to recover...");
+                        poisoned.into_inner()
+                    }
+                };
+                
+                let now = std::time::Instant::now();
+                buffer_guard.retain(|_, item| {
+                    now.duration_since(item.last_accessed) < timeout
+                });
+            }
+        })
     }
 }

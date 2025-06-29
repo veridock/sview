@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum, Args};
 use std::path::PathBuf;
 use std::process;
-use anyhow::{Result, Context};
+use anyhow::Result;
 use std::io::{self, Write};
 use std::time::SystemTime;
 use chrono::Local;

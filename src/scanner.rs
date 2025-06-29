@@ -4,8 +4,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 use std::fs;
 use anyhow::{Result, Context};
-use notify::{Watcher, RecursiveMode, watcher, Event as FsEvent, EventKind};
-use rayon::prelude::*;
+use notify::{Config, Event as FsEvent, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
 use serde::{Serialize, Deserialize};
 use walkdir::WalkDir;
 
@@ -144,9 +143,12 @@ impl FileScanner {
         callback: F,
     ) -> Result<()>
     where
-        P: AsRef<Path>,
+        P: AsRef<Path> + Send + 'static,
         F: Fn(Vec<FileEntry>) + Send + 'static,
     {
+        use std::sync::mpsc::channel;
+        use std::thread;
+
         let path = path.as_ref();
         if !path.exists() {
             return Err(anyhow::anyhow!("Path does not exist: {}", path.display()));
@@ -157,21 +159,42 @@ impl FileScanner {
         callback(initial_files);
 
         // Set up file watcher
-        let (tx, rx) = std::sync::mpsc::channel();
-        let mut watcher = watcher(tx, Duration::from_secs(1))?;
+        let (tx, rx) = channel();
         
-        // Watch the directory
-        watcher.watch(path, RecursiveMode::Recursive)?;
-        self.watched_paths.lock().unwrap().insert(path.to_path_buf());
+        // Create watcher with debounce
+        let mut watcher = RecommendedWatcher::new(
+            move |res: Result<FsEvent, _>| {
+                if let Ok(event) = res {
+                    if let Err(e) = tx.send(event) {
+                        eprintln!("Watch error: {}", e);
+                    }
+                }
+            },
+            Config::default().with_poll_interval(Duration::from_secs(1)),
+        )?;
 
-        // Spawn a thread to handle file system events
+        // Convert the path to a PathBuf and clone it for the thread
+        let path_buf = <P as AsRef<std::path::Path>>::as_ref(&path).to_path_buf();
+        let path_ref: &std::path::Path = path_buf.as_path();
+        
+        // Watch the path
+        watcher.watch(path_ref, RecursiveMode::Recursive)?;
+        
+        // Spawn a thread to handle events
+        let callback = Arc::new(std::sync::Mutex::new(callback));
+        
+        // Create a new thread with 'static lifetime
         std::thread::spawn(move || {
             for event in rx {
-                match event {
-                    Ok(FsEvent { kind: EventKind::Any, paths, .. }) => {
-                        // On any change, rescan the directory
-                        if let Ok(entries) = self.scan(path) {
-                            callback(entries);
+                match event.kind {
+                    EventKind::Any | EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_) => {
+                        // Create a new scanner for each event to avoid lifetime issues
+                        let scanner = FileScanner::new();
+                        // Rescan the directory and call the callback with the new file list
+                        if let Ok(entries) = scanner.scan(&path_buf) {
+                            if let Ok(cb) = callback.lock() {
+                                cb(entries);
+                            }
                         }
                     }
                     _ => {}
