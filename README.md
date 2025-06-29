@@ -36,30 +36,41 @@ SView to zaawansowane narzędzie do zarządzania, przeglądania i uruchamiania p
 
 ## 📦 Instalacja
 
-### Automatyczna instalacja (Linux/macOS)
+### Opcje uruchamiania
+
+Ponieważ `sview` nie jest jeszcze zainstalowany w systemie, masz dwie opcje:
+
+#### Opcja 1: Użyj pełnej ścieżki
 
 ```bash
-# Pobierz i uruchom skrypt instalacyjny
-curl -sSL https://raw.githubusercontent.com/veridock/sview/main/install.sh | bash
+# Przykład uruchomienia z pełną ścieżką
+./target/release/sview --help
 
-# Lub sklonuj repozytorium i uruchom lokalnie
-git clone https://github.com/veridock/sview.git
-cd sview
-chmod +x install.sh
-./install.sh
+# Podgląd pliku SVG w przeglądarce
+./target/release/sview view example.svg --browser
 ```
 
-### Manualna instalacja
+#### Opcja 2: Dodaj do PATH (tymczasowo)
 
 ```bash
-# Wymagania: Rust 1.70+, Node.js 18+ (opcjonalnie)
+# Dodaj katalog z binarką do PATH (tylko na czas bieżącej sesji)
+export PATH="$PWD/target/release:$PATH"
+
+# Teraz możesz używać sview bezpośrednio
+sview --help
+```
+
+### Instalacja systemowa
+
+```bash
+# Wymagania: Rust 1.70+
 git clone https://github.com/veridock/sview.git
 cd sview
 
 # Kompilacja
 cargo build --release --all-features
 
-# Kopiowanie do systemu
+# Instalacja systemowa (wymaga uprawnień roota)
 sudo cp target/release/sview /usr/local/bin/
 mkdir -p ~/.sview/{cache,config,logs}
 
@@ -88,101 +99,176 @@ choco install sview
 ### Podstawowe komendy
 
 ```bash
-# Wyświetl wszystkie pliki SVG z miniaturkami
-sview ls
+# Wyświetl wszystkie pliki SVG w bieżącym katalogu
+sview list
 
-# Uruchom konkretny plik jako PWA
-sview dashboard.svg
-sview /home/user/projects/chart.svg
+# Wyświetl szczegółowe informacje o plikach SVG
+sview list -l  # lub sview list --long
 
-# Uruchom interfejs graficzny
-sview --grid
-sview-gui  # jeśli zainstalowany
+# Posortuj pliki według rozmiaru (od największego)
+sview list -s size -r
+
+# Wyświetl pliki w określonym katalogu
+sview list /ścieżka/do/katalogu
+
+# Wyświetl pliki XML (zamiast domyślnych SVG)
+sview list --format=xml
+
+# Wyświetl pomoc
+sview --help
+sview list --help  # pomoc dla konkretnej komendy
 ```
 
-### 🔍 Wyszukiwanie plików z `sview ls`
-
-Komenda `sview ls` umożliwia efektywne wyszukiwanie i wyświetlanie plików SVG z zaawansowanymi opcjami filtrowania i sortowania.
-
-#### Podstawowe użycie
+### Podgląd plików SVG
 
 ```bash
-# Lista plików SVG w bieżącym katalogu
-sview ls
+# Otwórz plik SVG w domyślnej przeglądarce (wymagana flaga --browser)
+sview view example.svg --browser
 
-# Lista plików w określonym katalogu
-sview ls /ścieżka/do/katalogu
+# Ustaw niestandardowy rozmiar podglądu
+sview view example.svg --browser --width 1024 --height 768
 
-# Szczegółowe wyjście z dodatkowymi informacjami
-sview ls -l
-sview ls --long
+# Wyświetl pomoc dla komendy view
+sview view --help
+```
+
+**Uwaga:** Wbudowany podgląd SVG w terminalu nie jest jeszcze zaimplementowany. Obecnie jedynym działającym trybem jest otwarcie w przeglądarce za pomocą flagi `--browser`.
+
+### Zarządzanie pamięcią XQR
+
+```bash
+# Wyświetl wszystkie wpisy w pamięci
+sview memory list
+
+# Dodaj nowy wpis do pamięci
+sview memory add --key user.preferences.theme --value dark
+
+# Pobierz wartość z pamięci
+sview memory get --key user.preferences.theme
+
+# Usuń wpis z pamięci
+sview memory remove --key user.preferences.theme
+
+# Wyświetl pomoc dla komend pamięci
+sview memory --help
+```
+
+Uwaga: Pamięć XQR służy do przechowywania preferencji i ustawień użytkownika. Klucze powinny być zorganizowane hierarchicznie, używając kropek jako separatorów (np. `user.preferences.theme`).
+
+### Powłoka interaktywna i diagnostyka
+
+```bash
+# Uruchom interaktywną powłokę
+sview shell
+
+# Wyświetl informacje o systemie
+sview system info
+
+# Sprawdź wymagania systemowe
+sview system check
+
+# Wyczyść pliki tymczasowe
+sview system clean
+
+# Wyświetl pomoc dla komend systemowych
+sview system --help
+```
+
+### Przykłady użycia diagnostyki systemowej
+
+```bash
+# Sprawdź, czy system spełnia wymagania
+sview system check
+
+# Wyczyść pliki tymczasowe i cache
+sview system clean
+
+# Pobierz szczegółowe informacje o systemie
+sview system info
+```
+
+### 🔍 Wyszukiwanie plików z `sview list`
+
+Komenda `sview list` umożliwia wyświetlanie plików SVG z podstawowymi opcjami sortowania i formatowania.
+
+### 🔎 Przykłady użycia
+
+```bash
+# Wyświetlenie wszystkich plików SVG w bieżącym katalogu
+sview list
+
+# Wyświetlenie plików w określonym katalogu
+sview list /ścieżka/do/katalogu
+
+# Wyświetlenie szczegółowych informacji
+sview list -l
+sview list --long
 
 # Sortowanie wyników
-sview ls --sort=name     # domyślnie
-sview ls --sort=size     # rozmiar pliku
-sview ls --sort=modified # data modyfikacji
+sview list -s name     # domyślnie
+sview list -s size     # rozmiar pliku
+sview list -s modified # data modyfikacji
 
 # Odwrócenie kolejności sortowania
-sview ls -r
-sview ls --reverse
+sview list -r
+sview list --reverse
 
-# Filtrowanie po rozszerzeniu
-sview ls --format=svg    # tylko pliki SVG (domyślnie)
-sview ls --format=xml     # pliki XML
-sview ls --format=json    # pliki JSON
+# Filtrowanie po typie pliku
+sview list -f svg    # tylko pliki SVG (domyślnie)
+sview list -f xml     # pliki XML
 ```
 
-#### Zaawansowane opcje wyszukiwania
+### 🎯 Przykłady praktyczne
 
 ```bash
-# Wyszukiwanie rekurencyjne w podkatalogach
-sview ls -R
-sview ls --recursive
+# Wyświetl pliki posortowane według rozmiaru (od największego)
+sview list -s size -r
 
-# Ograniczenie głębokości wyszukiwania
-sview ls --max-depth=2
+# Wyświetl szczegółowe informacje o plikach XML
+sview list -f xml -l
 
-# Filtrowanie po rozmiarze pliku
-sview ls --min-size=1M    # pliki większe niż 1MB
-sview ls --max-size=10M   # pliki mniejsze niż 10MB
+# Wyświetl pliki w katalogu domowym użytkownika
+sview list ~
+sview list --export-thumbnails=output_directory/
 
-# Wykluczanie katalogów
-sview ls --exclude .git --exclude node_modules
+# Znajdź pliki SVG z błędami w składni
+sview list --check-validity
 
-# Wyszukiwanie z użyciem wzorców
-sview ls "*dashboard*"    # pliki zawierające 'dashboard' w nazwie
+# Wyszukaj pliki SVG z określonym kolorem dominującym
+sview list --dominant-color="#FF5733" --tolerance=10
 ```
 
-#### Przykłady użycia w praktyce
+#### Integracja z systemem plików
 
 ```bash
-# Znajdź ostatnio zmodyfikowane pliki SVG
-sview ls -l --sort=modified -r | head -n 10
+# Użyj sview list z find do zaawansowanego wyszukiwania
+find . -type f -name "*.svg" -exec sview list -l {} \; | sort -k5 -n
 
-# Znajdź duże pliki SVG w projekcie
-sview ls /projekt --min-size=5M -l
+# Połącz sview list z fzf do interaktywnego wyszukiwania
+sview list | fzf --preview 'sview view {}'
 
-# Przeszukaj katalog z wyłączeniem katalogów tymczasowych
-sview ls /dokumenty --exclude tmp --exclude temp
+# Użyj z ripgrep do wyszukiwania w zawartości plików
+sview list | xargs rg -l "@import"
 
-# Eksport wyników do pliku JSON
-sview ls -l --format=json > pliki.json
+# Stwórz podgląd miniatur w terminalu
+sview list --preview | less -R
 ```
 
 #### Integracja z innymi narzędziami
 
 ```bash
 # Przeszukaj zawartość plików SVG
-sview ls | xargs grep -l "keyword"
+sview list | xargs grep -l "keyword"
 
 # Usuń stare pliki tymczasowe starsze niż 30 dni
-sview ls --format=tmp --min-age=30 | xargs rm -f
+sview list --format=tmp --min-age=30 | xargs rm -f
 
 # Oblicz całkowity rozmiar plików SVG
-sview ls -l | awk '{sum += $1} END {print sum}'
+sview list -l | awk '{sum += $1} END {print sum}'
 ```
 
 # Pomoc
+```bash
 sview --help
 sview --version
 ```
@@ -506,11 +592,11 @@ sox = false
 ### Audyt bezpieczeństwa
 
 ```bash
-# Sprawdzenie bezpieczeństwa
-sview security audit
+# Sprawdzenie bezpieczeństwa (wymaga cargo-audit)
+cargo audit
 
-# Rotacja kluczy
-sview security rotate-keys
+# Sprawdzenie zależności GUI (w katalogu GUI)
+cd gui && npm audit
 
 # Sprawdzenie integralności
 sview security verify --all

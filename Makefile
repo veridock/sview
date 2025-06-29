@@ -318,86 +318,17 @@ examples:
 # Release build
 .PHONY: release
 release: clean test build-all
-	@echo "$(BLUE)🚀 Creating release build...$(NC)"
-	@mkdir -p $(DIST_DIR)
-	@cp $(TARGET_DIR)/release/$(PROJECT_NAME) $(DIST_DIR)/
-	@if [ -f "$(TARGET_DIR)/release/$(PROJECT_NAME)-gui" ]; then \
-		cp $(TARGET_DIR)/release/$(PROJECT_NAME)-gui $(DIST_DIR)/; \
-	fi
-	@cp README.md $(DIST_DIR)/
-	@cp LICENSE $(DIST_DIR)/
-	@echo "$(GREEN)✅ Release build completed$(NC)"
-	@echo "📦 Distribution files in $(DIST_DIR)/$(NC)"
-	@echo ""
+	@$(SCRIPTS_DIR)/create_release.sh
 
 # Create distribution packages
 .PHONY: package
 package: release
-	@echo "$(BLUE)📦 Creating distribution packages...$(NC)"
-	
-	@# Linux package
-	@tar -czf $(DIST_DIR)/$(PROJECT_NAME)-$(VERSION)-linux-x86_64.tar.gz -C $(DIST_DIR) .
-	
-	@# Create .deb package structure
-	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN
-	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/bin
-	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/share/applications
-	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/share/doc/$(PROJECT_NAME)
-	
-	@# Control file for .deb
-	@mkdir -p $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN
-	@echo 'Package: $(PROJECT_NAME)' > $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Version: $(VERSION)' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Section: utils' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Priority: optional' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Architecture: amd64' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Maintainer: XQR Team <team@xqr.ai>' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo 'Description: SVG Viewer & PWA Launcher with XQR Integration' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo ' SView is an advanced tool for managing, viewing and running SVG files' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	@echo ' as PWA applications with XQR memory system integration.' >> $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/DEBIAN/control
-	
-	@# Copy files to .deb structure
-	@cp $(DIST_DIR)/$(PROJECT_NAME) $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/bin/
-	@cp README.md $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/share/doc/$(PROJECT_NAME)/
-	@cp LICENSE $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION)/usr/share/doc/$(PROJECT_NAME)/
-	
-	@# Build .deb package
-	@if command -v dpkg-deb >/dev/null 2>&1; then \
-		dpkg-deb --build $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION); \
-		mv $(DIST_DIR)/deb/$(PROJECT_NAME)_$(VERSION).deb $(DIST_DIR)/; \
-		echo "$(GREEN)✅ .deb package created$(NC)"; \
-	else \
-		echo "$(YELLOW)⚠️  dpkg-deb not found - skipping .deb package$(NC)"; \
-	fi
-	
-	@# Create AppImage (Linux)
-	@if command -v appimagetool >/dev/null 2>&1; then \
-		mkdir -p $(DIST_DIR)/appimage/$(PROJECT_NAME).AppDir/usr/bin; \
-		cp $(DIST_DIR)/$(PROJECT_NAME) $(DIST_DIR)/appimage/$(PROJECT_NAME).AppDir/usr/bin/; \
-		echo "[Desktop Entry]\nName=SView\nExec=$(PROJECT_NAME)\nIcon=$(PROJECT_NAME)\nType=Application\nCategories=Utility;" > $(DIST_DIR)/appimage/$(PROJECT_NAME).AppDir/$(PROJECT_NAME).desktop; \
-		appimagetool $(DIST_DIR)/appimage/$(PROJECT_NAME).AppDir $(DIST_DIR)/$(PROJECT_NAME)-$(VERSION)-x86_64.AppImage; \
-		echo "$(GREEN)✅ AppImage created$(NC)"; \
-	else \
-		echo "$(YELLOW)⚠️  appimagetool not found - skipping AppImage$(NC)"; \
-	fi
-	
-	@echo "$(GREEN)✅ Distribution packages created$(NC)"
-	@echo ""
+	@$(SCRIPTS_DIR)/package_release.sh
 
 # Docker build
 .PHONY: docker
 docker:
-	@echo "$(BLUE)🐳 Building Docker image...$(NC)"
-	@echo 'FROM rust:1.70 as builder' > Dockerfile
-	@echo 'WORKDIR /app' >> Dockerfile
-	@echo 'COPY . .' >> Dockerfile
-	@echo 'RUN cargo build --release --all-features' >> Dockerfile
-	@echo '' >> Dockerfile
-	@echo 'FROM ubuntu:22.04' >> Dockerfile
-	@echo 'RUN apt-get update && apt-get install -y \' >> Dockerfile
-	@echo '    chromium-browser \' >> Dockerfile
-	@echo '    && rm -rf /var/lib/apt/lists/*' >> Dockerfile
-	@echo 'COPY --from=builder /app/target/release/sview /usr/local/bin/' >> Dockerfile
+	@$(SCRIPTS_DIR)/build_docker.sh
 	@echo 'COPY --from=builder /app/examples /usr/share/sview/examples' >> Dockerfile
 	@echo 'EXPOSE 8080' >> Dockerfile
 	@echo 'WORKDIR /data' >> Dockerfile
@@ -429,12 +360,10 @@ benchmark: build
 
 # Security audit
 .PHONY: audit
+# Run security audit
+.PHONY: audit
 audit:
-	@echo "$(BLUE)🔒 Running security audit...$(NC)"
-	@cargo audit
-	@if [ -d "$(GUI_DIR)" ]; then \
-		cd $(GUI_DIR) && npm audit; \
-	fi
+	@$(SCRIPTS_DIR)/run_audit.sh
 	@echo "$(GREEN)✅ Security audit completed$(NC)"
 	@echo ""
 

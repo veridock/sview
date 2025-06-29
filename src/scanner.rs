@@ -56,6 +56,134 @@ impl FileScanner {
             watched_paths: Arc::new(Mutex::new(HashSet::new())),
         }
     }
+    
+    /// Search for files matching a query with incremental results
+    pub fn search<P, F>(
+        &self, 
+        path: P, 
+        query: &str, 
+        search_content: bool,
+        ignore_case: bool,
+        mut callback: F,
+    ) -> Result<usize> 
+    where
+        P: AsRef<Path>,
+        F: FnMut(&FileEntry) -> bool,
+    {
+        let path = path.as_ref();
+        if !path.exists() {
+            return Err(anyhow::anyhow!("Path does not exist: {}", path.display()));
+        }
+
+        let query = if ignore_case {
+            query.to_lowercase()
+        } else {
+            query.to_string()
+        };
+
+        let mut count = 0;
+        let mut walker = WalkDir::new(path);
+        
+        // Apply configuration to walker
+        if let Some(depth) = self.config.max_depth {
+            walker = walker.max_depth(depth);
+        }
+        
+        if !self.config.recursive {
+            walker = walker.max_depth(1);
+        }
+
+        for entry in walker.into_iter().filter_map(Result::ok) {
+            // Skip directories in exclude list
+            if entry.file_type().is_dir() {
+                if self.config.exclude_dirs.iter().any(|dir| {
+                    entry.path().to_string_lossy().contains(dir)
+                }) {
+                    continue;
+                }
+                continue;
+            }
+
+
+            // Check file extension if specified
+            if let Some(extensions) = &self.config.extensions {
+                if let Some(ext) = entry.path().extension() {
+                    let ext_str = ext.to_string_lossy().to_string();
+                    if !extensions.iter().any(|e| e.eq_ignore_ascii_case(&ext_str)) {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+            }
+
+            // Get file metadata
+            let metadata = match fs::metadata(entry.path()) {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+
+            // Check size filters
+            let size = metadata.len();
+            if let Some(min) = self.config.min_size {
+                if size < min { continue; }
+            }
+            if let Some(max) = self.config.max_size {
+                if size > max { continue; }
+            }
+
+            // Create file entry
+            let file_entry = FileEntry {
+                path: entry.path().to_path_buf(),
+                is_dir: false,
+                size,
+                modified: metadata.modified().ok(),
+                file_type: entry.path().extension()
+                    .and_then(|ext| ext.to_str())
+                    .map(|s| s.to_string()),
+            };
+
+            // Check if filename matches
+            let file_name = entry.file_name().to_string_lossy();
+            let matches = if ignore_case {
+                file_name.to_lowercase().contains(&query)
+            } else {
+                file_name.contains(&query)
+            };
+
+            if matches {
+                count += 1;
+                if !callback(&file_entry) {
+                    break;
+                }
+                continue;
+            }
+
+            // If we should search in file contents
+            if search_content && size < 10_000_000 { // Skip large files
+                if let Ok(mut file) = fs::File::open(entry.path()) {
+                    let mut contents = String::new();
+                    if file.read_to_string(&mut contents).is_ok() {
+                        let search_text = if ignore_case {
+                            contents.to_lowercase()
+                        } else {
+                            contents
+                        };
+                        
+                        if search_text.contains(&query) {
+                            count += 1;
+                            if !callback(&file_entry) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        Ok(count)
+    }
 
     /// Configure the scanner with custom settings
     pub fn with_config(mut self, config: ScannerConfig) -> Self {
@@ -147,15 +275,14 @@ impl FileScanner {
         F: Fn(Vec<FileEntry>) + Send + 'static,
     {
         use std::sync::mpsc::channel;
-        use std::thread;
 
-        let path = path.as_ref();
-        if !path.exists() {
-            return Err(anyhow::anyhow!("Path does not exist: {}", path.display()));
+        let path_buf = path.as_ref().to_path_buf();
+        if !path_buf.exists() {
+            return Err(anyhow::anyhow!("Path does not exist: {}", path_buf.display()));
         }
 
         // Initial scan
-        let initial_files = self.scan(path)?;
+        let initial_files = self.scan(&path_buf)?;
         callback(initial_files);
 
         // Set up file watcher
@@ -173,12 +300,8 @@ impl FileScanner {
             Config::default().with_poll_interval(Duration::from_secs(1)),
         )?;
 
-        // Convert the path to a PathBuf and clone it for the thread
-        let path_buf = <P as AsRef<std::path::Path>>::as_ref(&path).to_path_buf();
-        let path_ref: &std::path::Path = path_buf.as_path();
-        
         // Watch the path
-        watcher.watch(path_ref, RecursiveMode::Recursive)?;
+        watcher.watch(&path_buf, RecursiveMode::Recursive)?;
         
         // Spawn a thread to handle events
         let callback = Arc::new(std::sync::Mutex::new(callback));

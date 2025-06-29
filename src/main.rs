@@ -31,6 +31,9 @@ enum Commands {
     /// View an SVG file
     View(ViewArgs),
     
+    /// Search for files by name or content
+    Search(SearchArgs),
+    
     /// Manage XQR memory
     Memory(MemoryArgs),
     
@@ -39,6 +42,37 @@ enum Commands {
     
     /// System information and diagnostics
     System(SystemArgs),
+}
+
+/// Arguments for the search command
+#[derive(Args, Debug)]
+struct SearchArgs {
+    /// Search query (filename or content)
+    query: String,
+    
+    /// Directory to search in (default: current directory)
+    #[arg(default_value = ".")]
+    path: PathBuf,
+    
+    /// File format/extension to filter by (e.g., svg, png, jpg)
+    #[arg(short, long)]
+    format: Option<String>,
+    
+    /// Search in file contents (not just filenames)
+    #[arg(short = 'c', long)]
+    content: bool,
+    
+    /// Case-insensitive search
+    #[arg(short = 'i', long)]
+    ignore_case: bool,
+    
+    /// Maximum depth to search
+    #[arg(short = 'd', long)]
+    max_depth: Option<usize>,
+    
+    /// Show detailed information
+    #[arg(short, long)]
+    long: bool,
 }
 
 /// Arguments for the list command
@@ -162,19 +196,83 @@ enum MemoryType {
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
-    
-    if cli.verbose {
-        println!("SView v{}", env!("CARGO_PKG_VERSION"));
-    }
-    
+
     match &cli.command {
         Commands::List(args) => list_files(args, cli.verbose)?,
         Commands::View(args) => view_file(args, cli.verbose)?,
+        Commands::Search(args) => search_files(args, cli.verbose)?,
         Commands::Memory(args) => handle_memory(args, cli.verbose)?,
-        Commands::Shell => start_shell()?,
         Commands::System(args) => handle_system(args, cli.verbose)?,
+        Commands::Shell => start_shell()?,
     }
-    
+
+    Ok(())
+}
+
+/// Search for files matching the query
+fn search_files(args: &SearchArgs, verbose: bool) -> Result<()> {
+    use std::time::Instant;
+
+    let start_time = Instant::now();
+    let path = &args.path;
+    let query = &args.query;
+
+    if !path.exists() {
+        return Err(anyhow::anyhow!("Path does not exist: {}", path.display()));
+    }
+
+    if verbose {
+        println!("Searching for '{}' in {} (max depth: {})",
+            query,
+            path.display(),
+            args.max_depth.map_or_else(|| "unlimited".to_string(), |d| format!("{}", d))
+        );
+    }
+
+    let mut scanner = scanner::FileScanner::new()
+        .with_config(scanner::ScannerConfig {
+            max_depth: args.max_depth,
+            extensions: args.format.as_ref().map(|f| vec![f.clone()]),
+            ..Default::default()
+        });
+
+    let mut found = 0;
+    let result = scanner.search(
+        path,
+        query,
+        args.content,
+        args.ignore_case,
+        |entry| {
+            found += 1;
+            
+            if args.long {
+                let modified = entry.modified
+                    .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                    .map(|d| {
+                        chrono::DateTime::<chrono::Local>::from(
+                            std::time::UNIX_EPOCH + d
+                        ).format("%Y-%m-%d %H:%M:%S").to_string()
+                    })
+                    .unwrap_or_else(|| "unknown".to_string());
+                
+                println!("{:>10}  {}  {}", 
+                    humansize::format_size(entry.size, humansize::BINARY),
+                    modified,
+                    entry.path.display()
+                );
+            } else {
+                println!("{}", entry.path.display());
+            }
+            
+            true // Continue searching
+        }
+    )?;
+
+    if verbose {
+        let elapsed = start_time.elapsed();
+        println!("\nFound {} matches in {:.2?}", found, elapsed);
+    }
+
     Ok(())
 }
 

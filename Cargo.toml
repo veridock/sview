@@ -1,14 +1,16 @@
 [package]
 name = "sview"
 version = "1.0.0"
-edition = "2021"
 authors = ["XQR Team <team@xqr.ai>"]
 description = "🧠 SView - SVG Viewer & PWA Launcher with XQR Integration"
-license = "Apache"
+license = "Apache-2.0"
 repository = "https://github.com/veridock/sview"
 keywords = ["svg", "pwa", "viewer", "xqr", "file-manager"]
 categories = ["command-line-utilities", "multimedia", "web-programming"]
+edition = "2021"
+rust-version = "1.70"
 default-run = "sview"
+
 
 [dependencies]
 # Error handling
@@ -90,6 +92,7 @@ tauri = []
 [[bin]]
 name = "sview"
 path = "src/main.rs"
+required-features = []
 
 [[bin]]
 name = "sview-gui"
