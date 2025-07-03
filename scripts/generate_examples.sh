@@ -120,18 +120,18 @@ generate_examples() {
     # Minimal Memory Example
     create_svg "${EXAMPLES_DIR}/minimal-memory.svg" '
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true" width="400" height="200" viewBox="0 0 400 200">
+     xmlns:sview="http://sview.veridock.com/schema/v1"
+     sview:enhanced="true" width="400" height="200" viewBox="0 0 400 200">
   <metadata>
-    <xqr:memory>
-      <xqr:factual>
-        <xqr:fact key="created">2023-06-15T10:30:00Z</xqr:fact>
-        <xqr:fact key="author">System</xqr:fact>
-      </xqr:factual>
-      <xqr:episodic>
-        <xqr:event type="created" timestamp="2023-06-15T10:30:00Z">Document created</xqr:event>
-      </xqr:episodic>
-    </xqr:memory>
+    <sview:memory>
+      <sview:factual>
+        <sview:fact key="created">2023-06-15T10:30:00Z</sview:fact>
+        <sview:fact key="author">System</sview:fact>
+      </sview:factual>
+      <sview:episodic>
+        <sview:event type="created" timestamp="2023-06-15T10:30:00Z">Document created</sview:event>
+      </sview:episodic>
+    </sview:memory>
   </metadata>
   <rect width="100%" height="100%" fill="#f8f9fa"/>
   <text x="50%" y="50%" text-anchor="middle" font-family="Arial" font-size="16" fill="#495057">Minimal Memory Example</text>
@@ -140,8 +140,8 @@ generate_examples() {
     # Pong Game
     create_svg "${EXAMPLES_DIR}/pong-game.svg" '
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true" width="600" height="400" viewBox="0 0 600 400">
+     xmlns:sview="http://sview.veridock.com/schema/v1"
+     sview:enhanced="true" width="600" height="400" viewBox="0 0 600 400">
   <rect width="100%" height="100%" fill="#000"/>
   <line x1="300" y1="0" x2="300" y2="400" stroke="#333" stroke-width="2" stroke-dasharray="10,10"/>
   <rect id="leftPaddle" x="20" y="150" width="10" height="100" fill="#fff"/>

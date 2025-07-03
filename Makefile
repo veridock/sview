@@ -1,4 +1,4 @@
-# SView - SVG Viewer & PWA Launcher with XQR Integration
+# SView - SVG Viewer & PWA Launcher with sView Integration
 # Makefile for project management
 
 # Variables
@@ -40,7 +40,7 @@ all: help
 .PHONY: help
 help:
 	@echo "$(BLUE)🧠 SView - SVG Viewer & PWA Launcher$(NC)"
-	@echo "$(PURPLE)🔗 XQR Integration Enabled$(NC)"
+	@echo "$(PURPLE)🔗 sView Integration Enabled$(NC)"
 	@echo "=================================="
 	@echo ""
 	@echo "$(GREEN)📦 Build commands:$(NC)"
@@ -100,8 +100,8 @@ build-gui:
 
 # Build everything
 .PHONY: build-all
-build-all: build build-gui
-	@echo "$(GREEN)✅ All components built successfully$(NC)"
+build-all: build
+	@echo "$(GREEN)✅ CLI built successfully$(NC)"
 	@echo ""
 
 # Development mode
@@ -211,84 +211,84 @@ docs-serve:
 .PHONY: examples
 examples:
 	@$(SCRIPTS_DIR)/generate_examples.sh
-	@# XQR Enhanced Dashboard
-	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '     xqr:enhanced="true" width="800" height="600" viewBox="0 0 800 600">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <metadata>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <xqr:factual>{"user": "demo", "preferences": {"theme": "dark"}}</xqr:factual>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <xqr:working>{"currentView": "dashboard"}</xqr:working>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <xqr:config>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      {"version": "1.0", "interactive": true, "pwa_capable": true, "memory_enabled": true}' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </xqr:config>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  </metadata>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <defs>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <stop offset="0%" stop-color="#667eea"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <stop offset="100%" stop-color="#764ba2"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </linearGradient>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  </defs>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <rect width="800" height="600" fill="url(#bgGradient)"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <rect x="0" y="0" width="800" height="80" fill="rgba(255,255,255,0.1)"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 XQR Dashboard</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <g xqr:interactive="true" xqr:data-binding="sales_data">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="40" y="120" width="720" height="400" rx="10" fill="rgba(255,255,255,0.9)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <text x="60" y="160" font-family="Arial" font-size="20" fill="#2d3748">Sales Overview</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <line x1="60" y1="180" x2="740" y2="180" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <!-- Chart content would be dynamically populated by XQR -->' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="100" y="250" width="40" height="200" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="200" dur="1s" fill="freeze"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="200" y="300" width="40" height="150" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="150" dur="1s" fill="freeze" begin="0.2s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="300" y="200" width="40" height="250" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="250" dur="1s" fill="freeze" begin="0.4s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="400" y="150" width="40" height="300" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="300" dur="1s" fill="freeze" begin="0.6s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="500" y="220" width="40" height="230" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="230" dur="1s" fill="freeze" begin="0.8s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="600" y="180" width="40" height="270" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '      <animate attributeName="height" from="0" to="270" dur="1s" fill="freeze" begin="1s"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    </rect>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <g xqr:interactive="true" xqr:onclick="showDetails('"'"'performance'"'"')">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="40" y="550" width="350" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <text x="60" y="572" font-family="Arial" font-size="14" fill="white">🔍 Click for Performance Details</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  <g xqr:interactive="true" xqr:onclick="showDetails('"'"'settings'"'"')">' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <rect x="430" y="550" width="330" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '    <text x="450" y="572" font-family="Arial" font-size="14" fill="white">⚙️ Configure Dashboard Settings</text>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '  </g>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
-	@echo '</svg>' >> $(EXAMPLES_DIR)/xqr-dashboard.svg
+	@# sView Enhanced Dashboard
+	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '     xmlns:sview="http://sview.veridock.com/schema/v1"' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '     sview:enhanced="true" width="800" height="600" viewBox="0 0 800 600">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <metadata>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <sview:memory>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <sview:factual>{"user": "demo", "preferences": {"theme": "dark"}}</sview:factual>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <sview:working>{"currentView": "dashboard"}</sview:working>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </sview:memory>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <sview:config>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      {"version": "1.0", "interactive": true, "pwa_capable": true, "memory_enabled": true}' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </sview:config>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  </metadata>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <defs>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <stop offset="0%" stop-color="#667eea"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <stop offset="100%" stop-color="#764ba2"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </linearGradient>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  </defs>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <rect width="800" height="600" fill="url(#bgGradient)"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <rect x="0" y="0" width="800" height="80" fill="rgba(255,255,255,0.1)"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 sView Dashboard</text>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <g sview:interactive="true" sview:data-binding="sales_data">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="40" y="120" width="720" height="400" rx="10" fill="rgba(255,255,255,0.9)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <text x="60" y="160" font-family="Arial" font-size="20" fill="#2d3748">Sales Overview</text>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <line x1="60" y1="180" x2="740" y2="180" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <!-- Chart content would be dynamically populated by sView -->' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="100" y="250" width="40" height="200" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="200" dur="1s" fill="freeze"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="200" y="300" width="40" height="150" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="150" dur="1s" fill="freeze" begin="0.2s"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="300" y="200" width="40" height="250" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="250" dur="1s" fill="freeze" begin="0.4s"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="400" y="150" width="40" height="300" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="300" dur="1s" fill="freeze" begin="0.6s"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="500" y="220" width="40" height="230" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="230" dur="1s" fill="freeze" begin="0.8s"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="600" y="180" width="40" height="270" fill="#4fd1c5" rx="2">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '      <animate attributeName="height" from="0" to="270" dur="1s" fill="freeze" begin="1s"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    </rect>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <g sview:interactive="true" sview:onclick="showDetails('"'"'performance'"'"')">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="40" y="550" width="350" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <text x="60" y="572" font-family="Arial" font-size="14" fill="white">🔍 Click for Performance Details</text>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  <g sview:interactive="true" sview:onclick="showDetails('"'"'settings'"'"')">' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <rect x="430" y="550" width="330" height="30" rx="4" fill="rgba(255,255,255,0.2)" stroke="#e2e8f0" stroke-width="1"/>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '    <text x="450" y="572" font-family="Arial" font-size="14" fill="white">⚙️ Configure Dashboard Settings</text>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '  </g>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
+	@echo '</svg>' >> $(EXAMPLES_DIR)/sview-dashboard.svg
 
 	@# Interactive Pong Game
 	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/pong-game.svg
 	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '     xqr:enhanced="true" width="600" height="400" viewBox="0 0 600 400">' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '     xmlns:sview="http://sview.veridock.com/schema/v1"' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '     sview:enhanced="true" width="600" height="400" viewBox="0 0 600 400">' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <metadata>' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '      <xqr:factual>{"highScore": 0, "player": "guest"}</xqr:factual>' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '      <xqr:working>{"gameState": "ready", "score": 0}</xqr:working>' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    <sview:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      <sview:factual>{"highScore": 0, "player": "guest"}</sview:factual>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      <sview:working>{"gameState": "ready", "score": 0}</sview:working>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    </sview:memory>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  </metadata>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <rect width="600" height="400" fill="#1a1a1a"/>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <line x1="300" y1="0" x2="300" y2="400" stroke="#333" stroke-width="2" stroke-dasharray="10,10"/>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <rect id="leftPaddle" x="20" y="150" width="10" height="100" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <rect id="rightPaddle" x="570" y="150" width="10" height="100" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <circle id="ball" cx="300" cy="200" r="8" fill="white"/>' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 XQR Pong - Click to Start</text>' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 sView Pong - Click to Start</text>' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '  <script type="application/javascript">' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '    console.log('"'"'🎮 XQR Pong Game loaded - click to start!'"'"');' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '    console.log('"'"'🎮 sView Pong Game loaded - click to start!'"'"');' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '    document.querySelector('"'"'svg'"'"').addEventListener('"'"'click'"'"', () => {' >> $(EXAMPLES_DIR)/pong-game.svg
-	@echo '      const event = new CustomEvent('"'"'xqr:interaction'"'"', {' >> $(EXAMPLES_DIR)/pong-game.svg
+	@echo '      const event = new CustomEvent('"'"'sview:interaction'"'"', {' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '        detail: { type: '"'"'game_start'"'"', player: '"'"'user'"'"' }' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '      });' >> $(EXAMPLES_DIR)/pong-game.svg
 	@echo '      document.dispatchEvent(event);' >> $(EXAMPLES_DIR)/pong-game.svg
@@ -299,19 +299,19 @@ examples:
 	@# Minimal Memory Example
 	@echo '<?xml version="1.0" encoding="UTF-8"?>' > $(EXAMPLES_DIR)/minimal-memory.svg
 	@echo '<svg xmlns="http://www.w3.org/2000/svg"' >> $(EXAMPLES_DIR)/minimal-memory.svg
-	@echo '     xmlns:xqr="http://xqr.ai/schema/v1"' >> $(EXAMPLES_DIR)/minimal-memory.svg
-	@echo '     xqr:enhanced="true" width="400" height="200" viewBox="0 0 400 200">' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '     xmlns:sview="http://sview.veridock.com/schema/v1"' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '     sview:enhanced="true" width="400" height="200" viewBox="0 0 400 200">' >> $(EXAMPLES_DIR)/minimal-memory.svg
 	@echo '  <metadata>' >> $(EXAMPLES_DIR)/minimal-memory.svg
-	@echo '    <xqr:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
-	@echo '      <xqr:factual>{"type": "minimal"}</xqr:factual>' >> $(EXAMPLES_DIR)/minimal-memory.svg
-	@echo '    </xqr:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '    <sview:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '      <sview:factual>{"type": "minimal"}</sview:factual>' >> $(EXAMPLES_DIR)/minimal-memory.svg
+	@echo '    </sview:memory>' >> $(EXAMPLES_DIR)/minimal-memory.svg
 	@echo '  </metadata>' >> $(EXAMPLES_DIR)/minimal-memory.svg
 	@echo '</svg>' >> $(EXAMPLES_DIR)/minimal-memory.svg
 
 	@echo "$(GREEN)✅ Example files created in $(EXAMPLES_DIR)/$(NC)"
 	@echo "📁 Files:"
 	@echo "  - simple-chart.svg        (Basic SVG chart)"
-	@echo "  - xqr-dashboard.svg       (XQR Enhanced dashboard)"
+	@echo "  - sview-dashboard.svg       (sView Enhanced dashboard)"
 	@echo "  - pong-game.svg           (Interactive game)"
 	@echo ""
 
@@ -322,7 +322,7 @@ release: clean test build-all
 
 # Create distribution packages
 .PHONY: package
-package: release
+package: build-all
 	@$(SCRIPTS_DIR)/package_release.sh
 
 # Docker build
@@ -375,8 +375,8 @@ demo: examples install
 	@echo "$(CYAN)📋 Listing example SVG files:$(NC)"
 	@$(PROJECT_NAME) ls $(EXAMPLES_DIR)
 	@echo ""
-	@echo "$(CYAN)🚀 Launching XQR Dashboard:$(NC)"
-	@$(PROJECT_NAME) $(EXAMPLES_DIR)/xqr-dashboard.svg &
+	@echo "$(CYAN)🚀 Launching sView Dashboard:$(NC)"
+	@$(PROJECT_NAME) $(EXAMPLES_DIR)/sview-dashboard.svg &
 	@sleep 2
 	@echo ""
 	@echo "$(CYAN)🎮 Launching Pong Game:$(NC)"
@@ -430,11 +430,11 @@ quickstart: install-deps examples install
 	@echo "$(CYAN)📖 Quick commands to try:$(NC)"
 	@echo "  $(PROJECT_NAME) ls                                    # List SVG files"
 	@echo "  $(PROJECT_NAME) $(EXAMPLES_DIR)/simple-chart.svg      # Launch simple chart"
-	@echo "  $(PROJECT_NAME) $(EXAMPLES_DIR)/xqr-dashboard.svg     # Launch XQR dashboard"
+	@echo "  $(PROJECT_NAME) $(EXAMPLES_DIR)/sview-dashboard.svg     # Launch sView dashboard"
 	@echo "  $(PROJECT_NAME) $(EXAMPLES_DIR)/pong-game.svg         # Launch game"
 	@echo "  $(PROJECT_NAME) --help                                # Show help"
 	@echo ""
-	@echo "$(PURPLE)🧠 XQR Features:$(NC)"
+	@echo "$(PURPLE)🧠 sView Features:$(NC)"
 	@echo "  • Memory system for intelligent file management"
 	@echo "  • PWA launcher for web-app experience" 
 	@echo "  • Multi-language code execution"
@@ -443,7 +443,7 @@ quickstart: install-deps examples install
 	@echo "$(YELLOW)💡 Next steps:$(NC)"
 	@echo "  1. Try the demo: make demo"
 	@echo "  2. Read docs: make docs-serve"
-	@echo "  3. Create your own SVG files with XQR enhancement"
+	@echo "  3. Create your own SVG files with sView enhancement"
 	@echo ""
 
 # Development environment setup

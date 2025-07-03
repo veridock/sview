@@ -27,10 +27,10 @@ Version: ${VERSION}
 Section: utils
 Priority: optional
 Architecture: amd64
-Maintainer: XQR Team <team@xqr.ai>
-Description: SVG Viewer & PWA Launcher with XQR Integration
+Maintainer: sView Team <info@softreck.dev>
+Description: SVG Viewer & PWA Launcher with sView Integration
  SView is an advanced tool for managing, viewing and running SVG files
- as PWA applications with XQR memory system integration.
+ as PWA applications with sView memory system integration.
 EOF
 
 # Copy files to .deb structure

@@ -4,7 +4,7 @@
 set -e
 
 echo "🧠 SView - SVG Viewer & PWA Launcher"
-echo "🔗 XQR Integration Enabled"
+echo "🔗 sView Integration Enabled"
 echo "=================================="
 echo
 
@@ -84,7 +84,7 @@ parallel_scan = true
 max_threads = 0  # 0 = auto-detect
 memory_limit = "512MB"
 
-[xqr]
+[sview]
 enabled = true
 memory_encryption = true
 auto_enhance = false
@@ -234,7 +234,7 @@ create_desktop_integration() {
     cat > ~/.local/share/applications/sview.desktop << EOF
 [Desktop Entry]
 Name=SView
-Comment=SVG Viewer & PWA Launcher with XQR Integration
+Comment=SVG Viewer & PWA Launcher with sView Integration
 Exec=sview %f
 Icon=sview
 Terminal=false
@@ -242,16 +242,16 @@ Type=Application
 Categories=Graphics;Viewer;Development;
 MimeType=image/svg+xml;
 StartupNotify=true
-Keywords=svg;viewer;pwa;xqr;
+Keywords=svg;viewer;pwa;sview;
 EOF
 
     # MIME type association
     cat > ~/.local/share/mime/packages/sview.xml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/xqr">
-        <comment>XQR Enhanced Document</comment>
-        <glob pattern="*.xqr"/>
+    <mime-type type="application/sview">
+        <comment>sView Enhanced Document</comment>
+        <glob pattern="*.sview"/>
         <icon name="sview"/>
     </mime-type>
 </mime-info>
@@ -291,27 +291,27 @@ create_examples() {
 </svg>
 EOF
 
-    # XQR Enhanced SVG
-    cat > ~/sview-examples/xqr-dashboard.svg << 'EOF'
+    # sView Enhanced SVG
+    cat > ~/sview-examples/sview-dashboard.svg << 'EOF'
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true"
+     xmlns:sview="http://sview.veridock.com/schema/v1"
+     sview:enhanced="true"
      width="800" height="600" viewBox="0 0 800 600">
 
   <metadata>
-    <xqr:memory>
-      <xqr:factual>{"preferences": {"theme": "dark"}, "user": "demo"}</xqr:factual>
-      <xqr:working>{"currentView": "dashboard", "lastUpdate": "2025-06-29T10:00:00Z"}</xqr:working>
-    </xqr:memory>
+    <sview:memory>
+      <sview:factual>{"preferences": {"theme": "dark"}, "user": "demo"}</sview:factual>
+      <sview:working>{"currentView": "dashboard", "lastUpdate": "2025-06-29T10:00:00Z"}</sview:working>
+    </sview:memory>
 
-    <xqr:config>
+    <sview:config>
       {
         "version": "1.0",
         "interactive": true,
         "pwa_capable": true,
         "memory_enabled": true
       }
-    </xqr:config>
+    </sview:config>
   </metadata>
 
   <!-- Background -->
@@ -326,10 +326,10 @@ EOF
 
   <!-- Header -->
   <rect x="0" y="0" width="800" height="80" fill="rgba(255,255,255,0.1)"/>
-  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 XQR Dashboard</text>
+  <text x="40" y="50" font-family="Arial" font-size="24" fill="white" font-weight="bold">🧠 sView Dashboard</text>
 
   <!-- Interactive widgets -->
-  <g xqr:interactive="true" xqr:data-binding="sales_data">
+  <g sview:interactive="true" sview:data-binding="sales_data">
     <!-- Sales chart -->
     <rect x="50" y="120" width="300" height="200" fill="rgba(255,255,255,0.9)" rx="10"/>
     <text x="200" y="145" text-anchor="middle" font-family="Arial" font-size="16" fill="#333">Sales Data</text>
@@ -342,21 +342,21 @@ EOF
   </g>
 
   <!-- Memory status indicator -->
-  <g xqr:memory-indicator="true">
+  <g sview:memory-indicator="true">
     <circle cx="750" cy="50" r="20" fill="rgba(0,255,0,0.3)" stroke="#00ff00" stroke-width="2"/>
     <text x="750" y="55" text-anchor="middle" font-size="12" fill="white">🧠</text>
   </g>
 
   <script type="application/javascript">
     <![CDATA[
-    // XQR Enhanced functionality
+    // sView Enhanced functionality
     function updateMemory(category, value) {
-      console.log('Updating XQR memory:', category, value);
+      console.log('Updating sView memory:', category, value);
 
       // Simulate memory update
-      if (typeof xqrMemory !== 'undefined') {
-        xqrMemory.working[category] = value;
-        xqrMemory.episodic.push({
+      if (typeof sviewMemory !== 'undefined') {
+        sviewMemory.working[category] = value;
+        sviewMemory.episodic.push({
           timestamp: new Date().toISOString(),
           event: 'user_interaction',
           data: { category, value }
@@ -364,15 +364,15 @@ EOF
       }
     }
 
-    // Initialize XQR memory system
-    window.xqrMemory = {
+    // Initialize sView memory system
+    window.sviewMemory = {
       factual: { preferences: { theme: "dark" }, user: "demo" },
       working: { currentView: "dashboard", lastUpdate: new Date().toISOString() },
       episodic: [],
       semantic: []
     };
 
-    console.log('🧠 XQR Enhanced SVG initialized');
+    console.log('🧠 sView Enhanced SVG initialized');
     ]]>
   </script>
 </svg>
@@ -381,15 +381,15 @@ EOF
     # Interactive game SVG
     cat > ~/sview-examples/pong-game.svg << 'EOF'
 <svg xmlns="http://www.w3.org/2000/svg"
-     xmlns:xqr="http://xqr.ai/schema/v1"
-     xqr:enhanced="true"
+     xmlns:sview="http://sview.veridock.com/schema/v1"
+     sview:enhanced="true"
      width="600" height="400" viewBox="0 0 600 400">
 
   <metadata>
-    <xqr:memory>
-      <xqr:factual>{"highScore": 0, "player": "guest"}</xqr:factual>
-      <xqr:working>{"gameState": "ready", "score": 0}</xqr:working>
-    </xqr:memory>
+    <sview:memory>
+      <sview:factual>{"highScore": 0, "player": "guest"}</sview:factual>
+      <sview:working>{"gameState": "ready", "score": 0}</sview:working>
+    </sview:memory>
   </metadata>
 
   <!-- Game background -->
@@ -410,11 +410,11 @@ EOF
   <text id="rightScore" x="450" y="50" font-family="monospace" font-size="36" fill="white" text-anchor="middle">0</text>
 
   <!-- Game title -->
-  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 XQR Pong</text>
+  <text x="300" y="30" font-family="Arial" font-size="18" fill="white" text-anchor="middle">🧠 sView Pong</text>
 
   <script type="application/javascript">
     <![CDATA[
-    // Simple Pong game with XQR memory
+    // Simple Pong game with sView memory
     let gameState = {
       ball: { x: 300, y: 200, vx: 3, vy: 2 },
       leftPaddle: { y: 150 },
@@ -488,7 +488,7 @@ EOF
       setInterval(updateGame, 16); // ~60fps
     });
 
-    console.log('🎮 XQR Pong Game loaded - click to start!');
+    console.log('🎮 sView Pong Game loaded - click to start!');
     ]]>
   </script>
 </svg>

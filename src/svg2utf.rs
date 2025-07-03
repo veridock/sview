@@ -6,8 +6,20 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-// Characters ordered by "density" from light to dark
-const DENSITY: &str = " .,:;+*?%S#@";
+// Unicode block elements for better visual representation
+const BLOCKS: [char; 9] = [
+    ' ',          // 0/8: No block
+    '▁',          // 1/8: Lower one eighth block
+    '▂',          // 2/8: Lower one quarter block
+    '▄',          // 3/8: Lower three eighths block
+    '▅',          // 4/8: Lower half block
+    '▆',          // 5/8: Lower five eighths block
+    '▇',          // 6/8: Lower three quarters block
+    '█',          // 7/8: Lower seven eighths block
+    '█',          // 8/8: Full block
+];
+
+// Default dimensions
 const WIDTH: u32 = 40;
 const HEIGHT: u32 = 20;
 
@@ -66,20 +78,44 @@ fn render_svg_to_ascii(svg_path: &Path, width: u32, height: u32) -> Result<Strin
     Ok(ascii)
 }
 
-/// Converts an image to ASCII art
+/// Converts an image to Unicode block characters
 fn image_to_ascii(img: &DynamicImage) -> String {
     let (width, height) = img.dimensions();
     let img = img.to_luma8();
     let mut result = String::with_capacity((width * height) as usize);
 
-    for y in 0..height {
+    // We'll use half the height since each Unicode block character is 2 cells tall
+    let block_height = (height / 2).max(1);
+    
+    for y in (0..height).step_by(2) {
         for x in 0..width {
-            let pixel = img.get_pixel(x, y);
-            let brightness = pixel.0[0] as f32 / 255.0;
-            let index = (brightness * (DENSITY.len() - 1) as f32).round() as usize;
-            result.push(DENSITY.chars().nth(index).unwrap_or(' '));
+            // Get the upper and lower pixels (or just the upper if we're at the last row)
+            let upper = img.get_pixel(x, y).0[0] as f32 / 255.0;
+            let lower = if y + 1 < height {
+                img.get_pixel(x, y + 1).0[0] as f32 / 255.0
+            } else {
+                0.0  // Empty for odd number of rows
+            };
+            
+            // Map brightness to block characters
+            let upper_idx = (upper * 8.0).round() as usize;
+            let lower_idx = (lower * 8.0).round() as usize;
+            
+            // Use different block characters based on upper and lower brightness
+            let block = match (upper_idx, lower_idx) {
+                (0, 0) => ' ',      // Empty
+                (8, 8) => '█',      // Full block
+                (u, 0) => BLOCKS[u.min(8)],  // Upper half block
+                (0, l) => BLOCKS[l.min(8)],  // Lower half block
+                (u, l) if u == l => BLOCKS[u.min(8)],  // Same brightness
+                (u, l) if u > l => '▀',  // Upper half block with lower half dot
+                _ => '▄',           // Lower half block with upper half dot
+            };
+            
+            result.push(block);
         }
-        if y < height - 1 {
+        
+        if y + 2 < height {
             result.push('\n');
         }
     }

@@ -38,7 +38,7 @@ sview-gui
 - Pan by clicking and dragging
 - Right-click for context menu
 
-### 2. XQR Memory Integration
+### 2. sView Memory Integration
 
 Access the memory system with:
 
@@ -79,5 +79,5 @@ sview process --input "*.svg" --output ./output --format png
 ## Next Steps
 
 - Learn about [advanced features](../user-guide/advanced-features.md)
-- Explore the [XQR Memory System](../user-guide/xqr-memory.md)
+- Explore the [sView Memory System](../user-guide/sview-memory.md)
 - Check out the [API reference](../api/README.md) for developers

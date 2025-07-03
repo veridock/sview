@@ -71,14 +71,14 @@ batch_size = 50
 # Timeout dla operacji I/O (ms)
 io_timeout = 5000
 
-[xqr]
-# Włącz obsługę XQR Enhanced SVG
+[sview]
+# Włącz obsługę sView Enhanced SVG
 enabled = true
 
 # Szyfrowanie systemu pamięci
 memory_encryption = true
 
-# Automatyczne ulepszanie standardowych SVG do XQR
+# Automatyczne ulepszanie standardowych SVG do sView
 auto_enhance = false
 
 # Algorytm kompresji: "none", "gzip", "brotli", "lz4"
@@ -90,7 +90,7 @@ compression_level = 6
 # Automatyczne tworzenie kopii zapasowych
 auto_backup = true
 
-# Maksymalny rozmiar pamięci XQR w MB
+# Maksymalny rozmiar pamięci sView w MB
 max_memory_size = 50
 
 [security]
@@ -222,7 +222,7 @@ config_dir = "~/.sview/config"
 log_dir = "~/.sview/logs"
 
 [memory]
-# Konfiguracja systemu pamięci XQR
+# Konfiguracja systemu pamięci sView
 
 # Włącz różne typy pamięci
 enable_factual = true

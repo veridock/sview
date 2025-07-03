@@ -12,7 +12,7 @@ mod memory;
 mod scanner;
 mod svg2utf;
 
-/// SView - SVG Viewer & PWA Launcher with XQR Integration
+/// SView - SVG Viewer & PWA Launcher with sView Integration
 #[derive(Parser, Debug)]
 #[command(name = "sview")]
 #[command(author, version, about, long_about = None)]
@@ -37,7 +37,7 @@ enum Commands {
     /// Search for files by name or content
     Search(SearchArgs),
 
-    /// Manage XQR memory
+    /// Manage sView memory
     Memory(MemoryArgs),
 
     /// Start interactive shell
@@ -709,7 +709,7 @@ fn print_help() {
     println!("Available commands:");
     println!("  list [path]      List SVG files in directory");
     println!("  view <file>      View an SVG file");
-    println!("  memory           Manage XQR memory");
+    println!("  memory           Manage sView memory");
     println!("  clear            Clear the screen");
     println!("  help             Show this help");
     println!("  exit | quit | q  Exit the shell");

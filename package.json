@@ -1,9 +1,9 @@
 {
   "name": "sview",
   "version": "1.0.0",
-  "description": "🧠 SVG Viewer & PWA Launcher with XQR Integration",
+  "description": "🧠 SVG Viewer & PWA Launcher with sView Integration",
   "main": "gui/main.js",
-  "author": "XQR Team <team@xqr.ai>",
+  "author": "sView Team <info@softreck.dev>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -12,12 +12,12 @@
   "bugs": {
     "url": "https://github.com/veridock/sview/issues"
   },
-  "homepage": "https://sview.xqr.ai",
+  "homepage": "https://sview.sview.ai",
   "keywords": [
     "svg",
     "viewer",
     "pwa",
-    "xqr",
+    "sview",
     "file-manager",
     "rust",
     "electron",
@@ -56,7 +56,7 @@
     "docs": "cargo doc --all-features --no-deps && mdbook build docs",
     "docs:serve": "mdbook serve docs --port 3000",
     "examples": "mkdir -p examples && scripts/create-examples.sh",
-    "demo": "npm run examples && sview examples/xqr-dashboard.svg",
+    "demo": "npm run examples && sview examples/sview-dashboard.svg",
     "benchmark": "cargo bench",
     "audit": "cargo audit && cd gui && npm audit",
     "update": "cargo update && cd gui && npm update",
@@ -81,9 +81,9 @@
     "better-sqlite3": "^8.7.0"
   },
   "build": {
-    "appId": "ai.xqr.sview",
+    "appId": "ai.sview.sview",
     "productName": "SView",
-    "copyright": "Copyright © 2025 XQR Team",
+    "copyright": "Copyright © 2025 sView Team",
     "directories": {
       "output": "dist",
       "resources": "resources"
@@ -136,11 +136,11 @@
         }
       ],
       "category": "Utility",
-      "description": "SVG Viewer & PWA Launcher with XQR Integration",
+      "description": "SVG Viewer & PWA Launcher with sView Integration",
       "desktop": {
         "StartupNotify": "true",
-        "MimeType": "image/svg+xml;application/xqr",
-        "Keywords": "svg;viewer;pwa;xqr;file-manager"
+        "MimeType": "image/svg+xml;application/sview",
+        "Keywords": "svg;viewer;pwa;sview;file-manager"
       }
     },
     "win": {
@@ -154,7 +154,7 @@
           "arch": ["x64"]
         }
       ],
-      "publisherName": "XQR Technologies"
+      "publisherName": "sView Technologies"
     },
     "mac": {
       "target": [
@@ -194,7 +194,7 @@
       "shortcutName": "SView"
     }
   },
-  "xqr": {
+  "sview": {
     "version": "1.0.0",
     "features": {
       "memory_system": true,
@@ -205,7 +205,7 @@
     },
     "supported_formats": [
       "svg",
-      "xqr",
+      "sview",
       "html",
       "xml"
     ],
@@ -221,6 +221,6 @@
   },
   "funding": {
     "type": "github",
-    "url": "https://github.com/sponsors/xqr"
+    "url": "https://github.com/sponsors/tom-sapletta-com"
   }
 }

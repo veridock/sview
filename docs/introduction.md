@@ -2,13 +2,13 @@
 
 ## Overview
 
-SView is a powerful, extensible SVG viewer and PWA launcher with XQR memory system integration. It provides a fast, efficient way to view, manage, and interact with SVG files, with advanced features for developers and designers alike.
+SView is a powerful, extensible SVG viewer and PWA launcher with sView memory system integration. It provides a fast, efficient way to view, manage, and interact with SVG files, with advanced features for developers and designers alike.
 
 ## Features
 
 - **Lightning-fast SVG rendering** with hardware acceleration
 - **PWA Launcher** for running SVGs as progressive web applications
-- **XQR Memory System** integration for enhanced functionality
+- **sView Memory System** integration for enhanced functionality
 - **Cross-platform** - works on Windows, macOS, and Linux
 - **Extensible architecture** with plugin support
 - **Command-line interface** for automation and scripting

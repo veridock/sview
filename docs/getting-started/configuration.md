@@ -30,7 +30,7 @@ default_zoom = 1.0
 show_status_bar = true
 
 [memory]
-# Enable/disable the XQR memory system
+# Enable/disable the sView memory system
 enabled = true
 
 # Memory cache size in MB

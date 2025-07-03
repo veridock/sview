@@ -5,7 +5,7 @@
   "main": "main.js",
   "homepage": "./",
   "private": false,
-  "author": "XQR Team <team@xqr.ai>",
+  "author": "sView Team <info@softreck.dev>",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
@@ -17,7 +17,7 @@
     "electron",
     "svg-viewer",
     "pwa",
-    "xqr",
+    "sview",
     "gui",
     "file-manager"
   ],
@@ -99,7 +99,7 @@
   },
   "main": "public/main.js",
   "build": {
-    "appId": "ai.xqr.sview.gui",
+    "appId": "ai.sview.sview.gui",
     "productName": "SView GUI",
     "directories": {
       "output": "../dist/gui"
@@ -143,14 +143,14 @@
       "search": true,
       "filters": true,
       "statistics": true,
-      "xqr_integration": true,
+      "sview_integration": true,
       "pwa_launcher": true,
       "drag_drop": true,
       "responsive_design": true
     },
     "supported_file_types": [
       "svg",
-      "xqr"
+      "sview"
     ],
     "view_modes": [
       "grid",

@@ -15,12 +15,12 @@ struct SvgFile {
     size: u64,
     modified: std::time::SystemTime,
     thumbnail: String, // UTF-8 icon representation
-    is_xqr_enhanced: bool,
-    metadata: Option<XqrMetadata>,
+    is_sview_enhanced: bool,
+    metadata: Option<sViewMetadata>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-struct XqrMetadata {
+struct sViewMetadata {
     version: String,
     memory_enabled: bool,
     pwa_capable: bool,
@@ -90,10 +90,10 @@ impl SvgScanner {
         let metadata = fs::metadata(&path)?;
         let content = fs::read_to_string(&path)?;
 
-        // Sprawdź czy to plik XQR-enhanced
-        let is_xqr_enhanced = content.contains("xmlns:xqr=") || content.contains("xqr:enhanced=");
-        let xqr_metadata = if is_xqr_enhanced {
-            Some(self.extract_xqr_metadata(&content))
+        // Sprawdź czy to plik sView-enhanced
+        let is_sview_enhanced = content.contains("xmlns:sview=") || content.contains("sview:enhanced=");
+        let sview_metadata = if is_sview_enhanced {
+            Some(self.extract_sview_metadata(&content))
         } else {
             None
         };
@@ -110,13 +110,13 @@ impl SvgScanner {
             size: metadata.len(),
             modified: metadata.modified()?,
             thumbnail,
-            is_xqr_enhanced,
-            metadata: xqr_metadata,
+            is_sview_enhanced,
+            metadata: sview_metadata,
         })
     }
 
-    fn extract_xqr_metadata(&self, content: &str) -> XqrMetadata {
-        XqrMetadata {
+    fn extract_sview_metadata(&self, content: &str) -> sViewMetadata {
+        sViewMetadata {
             version: "1.0".to_string(), // TODO: Extract from content
             memory_enabled: content.contains("memory:system"),
             pwa_capable: content.contains("manifest") || content.contains("service-worker"),
@@ -135,8 +135,8 @@ impl SvgScanner {
             "🎨" // Ścieżka/rysunek
         } else if content.contains("interactive") || content.contains("script") {
             "⚡" // Interaktywny
-        } else if content.contains("xqr:") {
-            "🧠" // XQR enhanced
+        } else if content.contains("sview:") {
+            "🧠" // sView enhanced
         } else if content.contains("text") {
             "📄" // Tekst
         } else if content.contains("image") {
@@ -197,11 +197,11 @@ impl SvgLauncher {
             .and_then(|s| s.to_str())
             .unwrap_or("SVG App");
 
-        // Sprawdź czy to XQR enhanced SVG
-        let is_xqr = svg_content.contains("xmlns:xqr=");
+        // Sprawdź czy to sView enhanced SVG
+        let is_sview = svg_content.contains("xmlns:sview=");
 
-        let html = if is_xqr {
-            self.create_xqr_pwa_wrapper(&svg_content, svg_name)
+        let html = if is_sview {
+            self.create_sview_pwa_wrapper(&svg_content, svg_name)
         } else {
             self.create_standard_pwa_wrapper(&svg_content, svg_name)
         };
@@ -209,7 +209,7 @@ impl SvgLauncher {
         Ok(html)
     }
 
-    fn create_xqr_pwa_wrapper(&self, svg_content: &str, app_name: &str) -> String {
+    fn create_sview_pwa_wrapper(&self, svg_content: &str, app_name: &str) -> String {
         format!(r#"<!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -223,7 +223,7 @@ impl SvgLauncher {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
 
-    <!-- XQR Enhanced Styles -->
+    <!-- sView Enhanced Styles -->
     <style>
         body {{
             margin: 0;
@@ -235,7 +235,7 @@ impl SvgLauncher {
             flex-direction: column;
         }}
 
-        .xqr-toolbar {{
+        .sview-toolbar {{
             background: rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             padding: 10px;
@@ -245,7 +245,7 @@ impl SvgLauncher {
             color: white;
         }}
 
-        .xqr-content {{
+        .sview-content {{
             flex: 1;
             display: flex;
             justify-content: center;
@@ -268,7 +268,7 @@ impl SvgLauncher {
             height: auto;
         }}
 
-        .xqr-memory-panel {{
+        .sview-memory-panel {{
             position: fixed;
             top: 60px;
             right: 20px;
@@ -286,8 +286,8 @@ impl SvgLauncher {
     </style>
 </head>
 <body>
-    <div class="xqr-toolbar">
-        <div>🧠 XQR Enhanced: {}</div>
+    <div class="sview-toolbar">
+        <div>🧠 sView Enhanced: {}</div>
         <div>
             <button onclick="toggleMemory()" style="background: rgba(255,255,255,0.2); border: none; color: white; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
                 💾 Memory
@@ -298,14 +298,14 @@ impl SvgLauncher {
         </div>
     </div>
 
-    <div class="xqr-content">
+    <div class="sview-content">
         <div class="svg-container">
             {}
         </div>
     </div>
 
-    <div id="memoryPanel" class="xqr-memory-panel">
-        <h3>🧠 XQR Memory System</h3>
+    <div id="memoryPanel" class="sview-memory-panel">
+        <h3>🧠 sView Memory System</h3>
         <div id="memoryContent">
             <p>Memory system initializing...</p>
         </div>
@@ -335,7 +335,7 @@ impl SvgLauncher {
             }}
         }}
 
-        // XQR Memory System
+        // sView Memory System
         let memorySystem = {{
             factual: {{}},
             episodic: [],
@@ -369,9 +369,9 @@ impl SvgLauncher {
             `;
         }}
 
-        // Inicjalizacja XQR
+        // Inicjalizacja sView
         document.addEventListener('DOMContentLoaded', () => {{
-            console.log('🧠 XQR Enhanced SVG App initialized');
+            console.log('🧠 sView Enhanced SVG App initialized');
 
             // Simulated memory initialization
             memorySystem.working = {{
@@ -516,12 +516,12 @@ impl SviewCLI {
         println!("\n📁 Znalezione pliki SVG:\n");
 
         for file in &svg_files {
-            let xqr_badge = if file.is_xqr_enhanced { "🧠" } else { "  " };
+            let sview_badge = if file.is_sview_enhanced { "🧠" } else { "  " };
             let size_kb = file.size / 1024;
 
             println!("{} {} {} {:>6} KB  {}",
                 file.thumbnail,
-                xqr_badge,
+                sview_badge,
                 file.name,
                 size_kb,
                 file.path.display()
@@ -530,8 +530,8 @@ impl SviewCLI {
 
         println!("\n📊 Statystyki:");
         println!("• Łącznie plików SVG: {}", svg_files.len());
-        println!("• XQR Enhanced: {}", svg_files.iter().filter(|f| f.is_xqr_enhanced).count());
-        println!("• Standardowe SVG: {}", svg_files.iter().filter(|f| !f.is_xqr_enhanced).count());
+        println!("• sView Enhanced: {}", svg_files.iter().filter(|f| f.is_sview_enhanced).count());
+        println!("• Standardowe SVG: {}", svg_files.iter().filter(|f| !f.is_sview_enhanced).count());
 
         Ok(())
     }
@@ -565,8 +565,8 @@ impl SviewCLI {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let matches = App::new("sview")
         .version("1.0.0")
-        .about("🧠 SView - SVG Viewer & PWA Launcher with XQR Integration")
-        .author("XQR Team")
+        .about("🧠 SView - SVG Viewer & PWA Launcher with sView Integration")
+        .author("sView Team")
         .arg(Arg::with_name("file")
             .help("Plik SVG do uruchomienia")
             .index(1))
@@ -588,7 +588,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Logo i informacje o aplikacji
     println!("🧠 SView v1.0.0 - SVG Viewer & PWA Launcher");
-    println!("🔗 XQR Integration Enabled\n");
+    println!("🔗 sView Integration Enabled\n");
 
     match matches.subcommand() {
         ("ls", Some(_)) => SviewCLI::list_command()?,
