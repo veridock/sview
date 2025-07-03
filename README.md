@@ -34,7 +34,87 @@ SView to zaawansowane narzędzie do zarządzania, przeglądania i uruchamiania p
 - **Rust** - Kompilacja i uruchamianie kodu Rust
 - **Go, Ruby, PHP** - Wsparcie dla dodatkowych języków
 
-## 📦 Instalacja
+## 🖼️ SVG to UTF-8 Rendering
+
+SView provides powerful SVG to UTF-8/ASCII rendering capabilities, allowing you to view and work with SVG files directly in your terminal. Here are some examples of how to use these features:
+
+### Basic SVG Rendering
+
+Render an SVG file to your terminal with default size (40x20 characters):
+
+```bash
+sview view example.svg
+```
+
+### Custom Output Size
+
+Specify custom dimensions for the output:
+
+```bash
+# Render with custom width and height
+sview view example.svg --width 60 --height 30
+```
+
+### Mini Icons in Directory Listings
+
+View a directory with mini SVG icons:
+
+```bash
+# List files with mini SVG icons
+sview list /path/to/svgs
+
+# Long format with details and mini icons
+sview list /path/to/svgs --long
+```
+
+### Advanced Usage Examples
+
+#### 1. Batch Convert SVGs to ASCII Art
+
+```bash
+# Convert all SVGs in a directory to ASCII art
+for svg in /path/to/svgs/*.svg; do
+    echo "Rendering $svg"
+    sview view "$svg" --width 60
+    echo "\n---\n"
+done
+```
+
+#### 2. Generate File Browser with Icons
+
+```bash
+# Create a file browser with SVG previews
+find /path/to/directory -name "*.svg" | while read -r file; do
+    echo "File: $file"
+    sview view "$file" --width 40 --height 10
+    echo "\n$(sview view "$file" --mini)"  # Show mini icon preview
+    echo "========================================"
+done
+```
+
+#### 3. Integration with Other Tools
+
+```bash
+# Use with fzf for interactive file selection
+selected=$(find /path/to/svgs -name "*.svg" | fzf --preview 'sview view {} --width 40 --height 15')
+if [ -n "$selected" ]; then
+    sview view "$selected"
+fi
+```
+
+### Rendering Options
+
+- `--width <WIDTH>`: Set output width in characters (default: 40)
+- `--height <HEIGHT>`: Set output height in characters (default: 20)
+- `--mini`: Show only a single-character representation
+- `--browser`: Open in default web browser instead of terminal
+- `--no-color`: Disable color output
+
+### Custom Character Sets
+
+You can customize the character set used for rendering by modifying the `DENSITY` constant in the source code (`src/svg2utf.rs`). The default character set is `" .,:;+*?%S#@"` (from lightest to darkest).
+
+## 📦 Installation
 
 ### Opcje uruchamiania
 
@@ -119,20 +199,237 @@ sview --help
 sview list --help  # pomoc dla konkretnej komendy
 ```
 
-### Podgląd plików SVG
+### Podgląd plików SVG w terminalu z ikonami UTF-8
+
+SView oferuje zaawansowane wyświetlanie plików SVG w terminalu przy użyciu znaków UTF-8, które są generowane na podstawie rzeczywistej zawartości plików SVG. Pozwala to na szybki podgląd zawartości bez opuszczania terminala.
+
+#### Generowanie miniatur SVG w terminalu
 
 ```bash
-# Otwórz plik SVG w domyślnej przeglądarce (wymagana flaga --browser)
+# Wyświetl podgląd pojedynczego pliku SVG jako ASCII/UTF-8
+sview view example.svg
+
+# Przykładowe wyjście:
+# ++++++++++++++++++++++++++++++
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%+
+# %;;;;;;;;;;+++++++++++++++%+
+# S**************************S+
+# @@@@@@@@@@@@@##############+
+# @@@@@@@@@@@@#S?%**%?%?%*?##;
+# @@@@@@@@@@@@###############;
+# @@@@@@@@@@@@@@@@@@@@@@@@@@S;
+# @@@@@@@@@@@@@@@@@@@@@@@@@@S;
+# @@@@@@@@@@@@@@@@@@@@@@@@@@S;
+# @@@@@@@@@@@@@@@@@@@@@@@@@@S;
+# @@@@@@@@@@@@@@@%?S#@@@@@@S;
+# @@@#%#@@##@@@@@@*??S@@@@@S;
+# @#%*?#%??%@@@@@@%*S@@@@@@S;
+# S@#?*?#+??%@@@@@@@@@@@@@S;
+# S@#S%S#%SSS@@@@@@@@@@@@@S;
+# S@@@@@@@@@@@@@@@@@@@@@@S;
+# ########################;
+# S######################%;
+# ++++++++;;;;;;;;;;;;;;;;;
+```
+
+#### Wyświetlanie katalogów z podglądami
+
+```bash
+# Wyświetl zawartość katalogu z podglądami SVG
+sview view /ścieżka/do/katalogu
+
+# Przykładowe wyjście:
+# ++++++  example1.svg
+# ++++++  example2.svg
+# ++++++  subdirectory/
+
+```
+
+#### Opcje wyświetlania
+
+```bash
+# Wyświetl szczegółowe informacje o plikach
+sview view -l  # lub --long
+
+# Ustaw niestandardowy rozmiar podglądu (szerokość x wysokość)
+sview view example.svg --width 30 --height 15
+
+# Wyświetl tylko podgląd bez ścieżki do pliku
+sview view example.svg --icon-only
+```
+
+#### Integracja z innymi narzędziami
+
+```bash
+# Przeszukaj i wyświetl wszystkie pliki SVG w podkatalogach
+find . -name "*.svg" -exec sview view {} \;
+
+# Wygeneruj podgląd SVG z potoku
+echo '<svg>...</svg>' | sview view -
+
+# Lub
+curl -s https://example.com/image.svg | sview view -
+```
+
+#### Automatyczne wykrywanie typu zawartości
+
+SView automatycznie wykrywa typ zawartości SVG i generuje odpowiednie podglądy dla:
+
+- Proste kształty i ikony
+- Wykresy i diagramy
+- Interfejsy użytkownika
+- Grafiki wektorowe
+- Logotypy
+
+#### Przełączniki wiersza poleceń
+
+```
+FLAGI:
+    -h, --help       Wyświetla pomoc
+    -l, --long       Pokaż szczegółowe informacje
+    -r, --reverse    Odwróć kolejność sortowania
+    -s, --sort SORT  Sortuj według: name, size, modified (domyślnie: name)
+    -w, --width WIDTH  Szerokość podglądu (domyślnie: 40)
+    -H, --height HEIGHT  Wysokość podglądu (domyślnie: 20)
+    -i, --icon-only  Wyświetl tylko ikonę bez ścieżki
+    -b, --browser    Otwórz w domyślnej przeglądarce zamiast wyświetlać w terminalu
+```
+
+#### Przykłady użycia w skryptach
+
+```bash
+# Wygeneruj stronę HTML z podglądami SVG
+echo "<html><body>" > previews.html
+for svg in *.svg; do
+    echo "<div style='float:left;margin:10px;text-align:center;'>" >> previews.html
+    echo "<pre>" >> previews.html
+    sview view "$svg" --width 30 --height 15 >> previews.html
+    echo "</pre>" >> previews.html
+    echo "<div>${svg}</div></div>" >> previews.html
+done
+echo "</body></html>" >> previews.html
+```
+
+#### Obsługa dużych katalogów
+
+Dla dużych katalogów SView używa przyrostowego ładowania i buforowania:
+
+```bash
+# Wyświetl pierwsze 10 plików
+sview view /duży/katalog | head -n 20
+
+# Monitoruj zmiany w katalogu
+watch -n 1 'sview view /katalog/do/monitorowania'
+```
+
+#### Personalizacja
+
+Możesz dostosować wygląd podglądów używając zmiennych środowiskowych:
+
+```bash
+# Ustaw niestandardowe znaki do renderowania (od najciemniejszego do najjaśniejszego)
+export SVIEW_CHARS=" .:-=+*#%@"
+
+# Włącz/wyłącz kolorowanie
+export SVIEW_COLORS=1  # 0 aby wyłączyć
+
+# Ustaw domyślny rozmiar
+export SVIEW_WIDTH=50
+export SVIEW_HEIGHT=25
+```
+
+#### Wymagania systemowe
+
+- Terminal wspierający znaki UTF-8
+- Biblioteki systemowe: librsvg, cairo, pango (zainstalowane domyślnie w większości dystrybucji)
+- Dla lepszej wydajności zalecany jest terminal z akceleracją sprzętową (np. Alacritty, Kitty, WezTerm)
+
+#### Podstawowe użycie
+
+```bash
+# Wyświetl plik SVG w terminalu z ikoną UTF-8
+sview view example.svg
+
+# Wyświetl zawartość katalogu z ikonami
+sview view /ścieżka/do/katalogu
+
+# Wyświetl szczegółowe informacje o plikach
+sview view -l  # lub --long
+```
+
+#### Sortowanie i filtrowanie
+
+```bash
+# Sortuj według rozmiaru (od najmniejszego)
+sview view --sort=size
+
+# Sortuj według daty modyfikacji (od najnowszego)
+sview view --sort=modified -r
+
+# Ogranicz głębokość przeszukiwania
+sview view --depth=2
+```
+
+#### Integracja z innymi narzędziami
+
+```bash
+# Użycie z find do wyszukiwania i wyświetlania SVG
+find ~/ -name "*.svg" -type f -exec sview view {} \;
+
+# Liczba plików SVG w katalogu
+sview view /katalog | wc -l
+
+# Wyszukaj i wyświetl tylko określone pliki
+sview view /katalog | grep wzorzec
+```
+
+#### Zaawansowane użycie
+
+```bash
+# Wyświetl tylko ikony (pomijając ścieżki)
+sview view /katalog | awk '{print $1}'
+
+# Generowanie listy plików z ikonami do pliku HTML
+sview view /katalog > svg_list.html
+
+# Użycie w skryptach
+for svg in $(find . -name "*.svg"); do
+    echo -n "$svg: "
+    sview view "$svg"
+done
+```
+
+#### Obsługiwane typy ikon
+
+SView automatycznie wykrywa typ pliku SVG i wybiera odpowiednią ikonę:
+
+- `📊` - Wykresy i diagramy
+- `⭕` - Elementy okrągłe (np. przyciski, ikony)
+- `📁` - Katalogi
+- `📄` - Dokumenty
+- `🖼️` - Obrazy
+- `🔍` - Wyszukiwanie
+- `⚙️` - Ustawienia
+- `📥` - Pobieranie/przesyłanie
+
+#### Otwieranie w przeglądarce
+
+```bash
+# Otwórz plik SVG w domyślnej przeglądarce
 sview view example.svg --browser
 
 # Ustaw niestandardowy rozmiar podglądu
 sview view example.svg --browser --width 1024 --height 768
+```
 
+#### Pomoc
+
+```bash
 # Wyświetl pomoc dla komendy view
 sview view --help
 ```
 
-**Uwaga:** Wbudowany podgląd SVG w terminalu nie jest jeszcze zaimplementowany. Obecnie jedynym działającym trybem jest otwarcie w przeglądarce za pomocą flagi `--browser`.
+**Uwaga:** Domyślnie `sview view` wyświetla ikonę UTF-8 reprezentującą zawartość SVG. Aby otworzyć plik w przeglądarce, użyj flagi `--browser`.
 
 ### Zarządzanie pamięcią XQR
 

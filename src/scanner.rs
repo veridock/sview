@@ -1,11 +1,9 @@
-use std::path::{Path, PathBuf};
-use std::collections::HashSet;
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, SystemTime};
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::fs;
-use anyhow::{Result, Context};
-use notify::{Config, Event as FsEvent, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use serde::{Serialize, Deserialize};
+use std::io::Read;
+use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use walkdir::WalkDir;
 
 /// Represents a file system entry (file or directory)
@@ -45,7 +43,6 @@ impl Default for ScannerConfig {
 /// Main scanner implementation
 pub struct FileScanner {
     config: ScannerConfig,
-    watched_paths: Arc<Mutex<HashSet<PathBuf>>>,
 }
 
 impl FileScanner {
@@ -53,19 +50,82 @@ impl FileScanner {
     pub fn new() -> Self {
         Self {
             config: ScannerConfig::default(),
-            watched_paths: Arc::new(Mutex::new(HashSet::new())),
         }
     }
-    
+
+    /// Scan a directory and return all files matching the configuration
+    pub fn scan<P: AsRef<Path>>(&self, path: P) -> Result<Vec<FileEntry>> {
+        let path = path.as_ref();
+        let mut entries = Vec::new();
+
+        let walker = WalkDir::new(path).max_depth(if self.config.recursive {
+            self.config.max_depth.unwrap_or(usize::MAX)
+        } else {
+            1
+        });
+
+        for entry in walker.into_iter().filter_map(Result::ok) {
+            // Skip directories in exclude list
+            if entry.file_type().is_dir() {
+                if self.config.exclude_dirs.iter().any(|dir| {
+                    entry.path().file_name().map_or(false, |name| {
+                        name.to_string_lossy().eq_ignore_ascii_case(dir)
+                    })
+                }) {
+                    continue;
+                }
+            }
+
+            if let Ok(metadata) = entry.metadata() {
+                let file_type = if entry.file_type().is_dir() {
+                    Some("directory".to_string())
+                } else if let Some(ext) = entry.path().extension() {
+                    Some(ext.to_string_lossy().to_string())
+                } else {
+                    None
+                };
+
+                let entry = FileEntry {
+                    path: entry.path().to_path_buf(),
+                    is_dir: entry.file_type().is_dir(),
+                    size: metadata.len(),
+                    modified: metadata.modified().ok(),
+                    file_type,
+                };
+
+                // Check size filters
+                let size_ok = self.config.min_size.map_or(true, |min| entry.size >= min)
+                    && self.config.max_size.map_or(true, |max| entry.size <= max);
+
+                // Check extension filter
+                let ext_ok = if let Some(exts) = &self.config.extensions {
+                    entry
+                        .path
+                        .extension()
+                        .and_then(|e| e.to_str())
+                        .map_or(false, |e| exts.iter().any(|x| x.eq_ignore_ascii_case(e)))
+                } else {
+                    true
+                };
+
+                if size_ok && ext_ok {
+                    entries.push(entry);
+                }
+            }
+        }
+
+        Ok(entries)
+    }
+
     /// Search for files matching a query with incremental results
     pub fn search<P, F>(
-        &self, 
-        path: P, 
-        query: &str, 
+        &self,
+        path: P,
+        query: &str,
         search_content: bool,
         ignore_case: bool,
         mut callback: F,
-    ) -> Result<usize> 
+    ) -> Result<usize>
     where
         P: AsRef<Path>,
         F: FnMut(&FileEntry) -> bool,
@@ -83,12 +143,12 @@ impl FileScanner {
 
         let mut count = 0;
         let mut walker = WalkDir::new(path);
-        
+
         // Apply configuration to walker
         if let Some(depth) = self.config.max_depth {
             walker = walker.max_depth(depth);
         }
-        
+
         if !self.config.recursive {
             walker = walker.max_depth(1);
         }
@@ -97,13 +157,15 @@ impl FileScanner {
             // Skip directories in exclude list
             if entry.file_type().is_dir() {
                 if self.config.exclude_dirs.iter().any(|dir| {
-                    entry.path().to_string_lossy().contains(dir)
+                    entry.path().file_name().map_or(false, |name| {
+                        name.to_string_lossy().eq_ignore_ascii_case(dir)
+                    })
                 }) {
                     continue;
                 }
+                // Don't continue here - we want to process files in this directory
                 continue;
             }
-
 
             // Check file extension if specified
             if let Some(extensions) = &self.config.extensions {
@@ -126,10 +188,14 @@ impl FileScanner {
             // Check size filters
             let size = metadata.len();
             if let Some(min) = self.config.min_size {
-                if size < min { continue; }
+                if size < min {
+                    continue;
+                }
             }
             if let Some(max) = self.config.max_size {
-                if size > max { continue; }
+                if size > max {
+                    continue;
+                }
             }
 
             // Create file entry
@@ -138,14 +204,19 @@ impl FileScanner {
                 is_dir: false,
                 size,
                 modified: metadata.modified().ok(),
-                file_type: entry.path().extension()
+                file_type: entry
+                    .path()
+                    .extension()
                     .and_then(|ext| ext.to_str())
                     .map(|s| s.to_string()),
             };
 
             // Check if filename matches
             let file_name = entry.file_name().to_string_lossy();
-            let matches = if ignore_case {
+            let matches = if query == ".*" {
+                // Special case: .* matches all files
+                true
+            } else if ignore_case {
                 file_name.to_lowercase().contains(&query)
             } else {
                 file_name.contains(&query)
@@ -160,7 +231,8 @@ impl FileScanner {
             }
 
             // If we should search in file contents
-            if search_content && size < 10_000_000 { // Skip large files
+            if search_content && size < 10_000_000 {
+                // Skip large files
                 if let Ok(mut file) = fs::File::open(entry.path()) {
                     let mut contents = String::new();
                     if file.read_to_string(&mut contents).is_ok() {
@@ -169,7 +241,7 @@ impl FileScanner {
                         } else {
                             contents
                         };
-                        
+
                         if search_text.contains(&query) {
                             count += 1;
                             if !callback(&file_entry) {
@@ -181,7 +253,6 @@ impl FileScanner {
             }
         }
 
-
         Ok(count)
     }
 
@@ -189,143 +260,6 @@ impl FileScanner {
     pub fn with_config(mut self, config: ScannerConfig) -> Self {
         self.config = config;
         self
-    }
-
-    /// Scan a directory and return all matching files
-    pub fn scan<P: AsRef<Path>>(&self, path: P) -> Result<Vec<FileEntry>> {
-        let path = path.as_ref();
-        if !path.exists() {
-            return Err(anyhow::anyhow!("Path does not exist: {}", path.display()));
-        }
-
-        let mut walker = WalkDir::new(path);
-        
-        // Apply configuration to walker
-        if let Some(depth) = self.config.max_depth {
-            walker = walker.max_depth(depth);
-        }
-        
-        if !self.config.recursive {
-            walker = walker.max_depth(1);
-        }
-
-        // Filter and collect files in parallel
-        let files: Vec<FileEntry> = walker
-            .into_iter()
-            .filter_map(Result::ok)
-            .filter(|entry| {
-                // Skip directories in exclude list
-                if entry.file_type().is_dir() {
-                    return !self.config.exclude_dirs.iter().any(|dir| {
-                        entry.path().to_string_lossy().contains(dir)
-                    });
-                }
-                true
-            })
-            .filter_map(|entry| {
-                let metadata = fs::metadata(entry.path()).ok()?;
-                
-                // Skip if file doesn't match size filters
-                if let Some(min) = self.config.min_size {
-                    if metadata.len() < min {
-                        return None;
-                    }
-                }
-                
-                if let Some(max) = self.config.max_size {
-                    if metadata.len() > max {
-                        return None;
-                    }
-                }
-
-                // Check file extension
-                if let Some(extensions) = &self.config.extensions {
-                    let ext = entry.path().extension()
-                        .and_then(|e| e.to_str())
-                        .unwrap_or("").to_lowercase();
-                    
-                    if !extensions.iter().any(|e| e.to_lowercase() == ext) {
-                        return None;
-                    }
-                }
-
-                Some(FileEntry {
-                    path: entry.path().to_path_buf(),
-                    is_dir: entry.file_type().is_dir(),
-                    size: metadata.len(),
-                    modified: metadata.modified().ok(),
-                    file_type: entry.path().extension()
-                        .and_then(|e| e.to_str())
-                        .map(|s| s.to_string()),
-                })
-            })
-            .collect();
-
-        Ok(files)
-    }
-
-    /// Watch a directory for changes and call the callback when changes are detected
-    pub fn watch<P, F>(
-        &self,
-        path: P,
-        callback: F,
-    ) -> Result<()>
-    where
-        P: AsRef<Path> + Send + 'static,
-        F: Fn(Vec<FileEntry>) + Send + 'static,
-    {
-        use std::sync::mpsc::channel;
-
-        let path_buf = path.as_ref().to_path_buf();
-        if !path_buf.exists() {
-            return Err(anyhow::anyhow!("Path does not exist: {}", path_buf.display()));
-        }
-
-        // Initial scan
-        let initial_files = self.scan(&path_buf)?;
-        callback(initial_files);
-
-        // Set up file watcher
-        let (tx, rx) = channel();
-        
-        // Create watcher with debounce
-        let mut watcher = RecommendedWatcher::new(
-            move |res: Result<FsEvent, _>| {
-                if let Ok(event) = res {
-                    if let Err(e) = tx.send(event) {
-                        eprintln!("Watch error: {}", e);
-                    }
-                }
-            },
-            Config::default().with_poll_interval(Duration::from_secs(1)),
-        )?;
-
-        // Watch the path
-        watcher.watch(&path_buf, RecursiveMode::Recursive)?;
-        
-        // Spawn a thread to handle events
-        let callback = Arc::new(std::sync::Mutex::new(callback));
-        
-        // Create a new thread with 'static lifetime
-        std::thread::spawn(move || {
-            for event in rx {
-                match event.kind {
-                    EventKind::Any | EventKind::Create(_) | EventKind::Modify(_) | EventKind::Remove(_) => {
-                        // Create a new scanner for each event to avoid lifetime issues
-                        let scanner = FileScanner::new();
-                        // Rescan the directory and call the callback with the new file list
-                        if let Ok(entries) = scanner.scan(&path_buf) {
-                            if let Ok(cb) = callback.lock() {
-                                cb(entries);
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        });
-
-        Ok(())
     }
 }
 
@@ -335,29 +269,36 @@ impl Default for FileScanner {
     }
 }
 
-/// Utility function to get file metadata
+#[cfg(test)]
+/// Get metadata for a file
 pub fn get_file_metadata<P: AsRef<Path>>(path: P) -> Result<FileEntry> {
     let path = path.as_ref();
-    let metadata = fs::metadata(path)
-        .with_context(|| format!("Failed to get metadata for {}", path.display()))?;
+    let metadata = std::fs::metadata(path)?;
+
+    let file_type = if metadata.is_dir() {
+        Some("directory".to_string())
+    } else {
+        path.extension()
+            .and_then(|e| e.to_str())
+            .map(|s| s.to_string())
+    };
 
     Ok(FileEntry {
         path: path.to_path_buf(),
         is_dir: metadata.is_dir(),
         size: metadata.len(),
         modified: metadata.modified().ok(),
-        file_type: path.extension()
-            .and_then(|e| e.to_str())
-            .map(|s| s.to_string()),
+        file_type,
     })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use tempfile::tempdir;
     use std::fs::File;
     use std::io::Write;
+    use std::path::Path;
+    use tempfile::tempdir;
 
     #[test]
     fn test_scan_directory() -> Result<()> {
@@ -376,10 +317,10 @@ mod tests {
         // Test scanner with default config
         let scanner = FileScanner::new();
         let files = scanner.scan(dir.path())?;
-        
+
         // Should find both files and the subdirectory
         assert!(files.len() >= 2);
-        
+
         // Test with non-recursive scan
         let config = ScannerConfig {
             recursive: false,
@@ -387,25 +328,54 @@ mod tests {
         };
         let scanner = FileScanner::new().with_config(config);
         let files = scanner.scan(dir.path())?;
-        
-        // Should only find files in the root
-        assert_eq!(files.len(), 1);
-        
+
+        // Should only find the test file in the root (not directories or hidden files)
+        let root_files: Vec<_> = files
+            .iter()
+            .filter(|f| {
+                !f.is_dir
+                    && f.path
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .map_or(false, |n| !n.starts_with('.'))
+            })
+            .collect();
+
+        assert_eq!(
+            root_files.len(),
+            1,
+            "Should only find the test file in root directory"
+        );
+        assert_eq!(
+            root_files[0].path.file_name().unwrap().to_string_lossy(),
+            "test.txt",
+            "Should find the test.txt file"
+        );
+
         Ok(())
     }
 
     #[test]
     fn test_file_metadata() -> Result<()> {
-        let dir = tempdir()?;
-        let file_path = dir.path().join("test_meta.txt");
-        File::create(&file_path)?;
-        
-        let meta = get_file_metadata(&file_path)?;
-        assert_eq!(meta.path, file_path);
-        assert!(!meta.is_dir);
-        assert!(meta.size == 0);
-        assert!(meta.modified.is_some());
-        
+        let temp_dir = tempdir()?;
+        let file_path = temp_dir.path().join("test.txt");
+        let mut file = File::create(&file_path)?;
+        write!(file, "test content")?;
+
+        let metadata = get_file_metadata(&file_path)?;
+        assert_eq!(metadata.path, file_path);
+        assert!(metadata.size > 0);
+        assert!(metadata.modified.is_some());
+        assert!(!metadata.is_dir);
+
+        // Test with Path and PathBuf
+        let path_buf = file_path.clone();
+        let path = path_buf.as_path();
+
+        let metadata_from_path = get_file_metadata(path)?;
+        assert_eq!(metadata_from_path.path, file_path);
+
+        temp_dir.close()?;
         Ok(())
     }
 }

@@ -1,5 +1,5 @@
-use tauri::{App, Manager};
 use anyhow::Result;
+use tauri::{App, Manager};
 
 pub fn run_gui() -> Result<()> {
     tauri::Builder::default()

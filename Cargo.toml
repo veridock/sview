@@ -41,14 +41,35 @@ chrono = { version = "0.4", features = ["serde"] }
 # HTTP client for fetching remote SVGs
 reqwest = { version = "0.11", features = ["json"] }
 
+# Terminal size detection
+terminal_size = "0.3"
+
 # Async runtime
 tokio = { version = "1.0", features = ["full"] }
+
+# Image processing
+image = { version = "0.24.0", default-features = false, features = ["png", "jpeg", "gif", "bmp", "tiff", "tga", "webp", "hdr", "dxt", "dds", "farbfeld", "pnm", "ico"] }
 
 # SVG parsing and manipulation
 roxmltree = "0.18"
 
-# Image processing for thumbnails
-image = "0.24"
+# SVG processing and rendering
+svg = "0.13"
+resvg = "0.28"
+usvg = "0.28"
+imageproc = "0.23"
+rusttype = "0.9"
+tiny-skia = { version = "0.8", features = ["png"] }
+
+# Terminal output
+unicode-width = "0.1"
+ansi_term = "0.12"
+
+# Testing
+tempfile = "3.3"
+
+# Human-readable file sizes
+humansize = "2.1"
 
 # Color processing
 palette = "0.7"
